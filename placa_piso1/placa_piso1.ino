@@ -4,7 +4,8 @@
 #include <PubSubClient.h> // Biblioteca para generar la conexión MQTT con un servidor (Ej.: ThingsBoard)
 #include <ArduinoJson.h>  // Biblioteca para manejar Json en Arduino
 #include <MQ135.h>
-
+#include <SPI.h>//https://www.arduino.cc/en/reference/SPI
+#include <MFRC522.h>//https://github.com/miguelbalboa/rfid
 
 #ifndef ESP32
 #pragma message(THIS EXAMPLE IS FOR ESP32 ONLY!)
@@ -21,8 +22,12 @@
 DHTesp dht;
 
 // Credenciales de la red WiFi
+//const char* ssid = "HUAWEI-IoT";
+//const char* password = "ORTWiFiIoT";
 const char* ssid = "iPhone de Pilar";
+
 const char* password = "091662244";
+
 
 // Host de ThingsBoard
 const char* mqtt_server = "demo.thingsboard.io";
@@ -31,8 +36,13 @@ const int mqtt_port = 1883;
 // Token del dispositivo en ThingsBoard
 const char* token = "6kP90GSF7F5VJXTEdkU1";
 
+//Parameters
+const int ipaddress[4] = {103, 97, 67, 25};
+
 #define sensorAgua 25
 #define PIN_MQ135 33
+#define SS_PIN 5
+#define RST_PIN 2
 
 
 /*========= VARIABLES =========*/
@@ -50,6 +60,11 @@ int msgPeriod = 2000;       // Actualizar los datos cada 2 segundos
 float humedad = 0;
 float tempAmbiente = 0;
 boolean led_state = false;
+
+//Variables RFID
+byte nuidPICC[4] = {0, 0, 0, 0};
+MFRC522::MIFARE_Key key;
+MFRC522 rfid = MFRC522(SS_PIN, RST_PIN);
 
 // Mensajes y buffers
 #define MSG_BUFFER_SIZE  (50)
@@ -313,10 +328,16 @@ void setup()
   setup_wifi();                           // Establecer la conexión WiFi
   client.setServer(mqtt_server, mqtt_port);// Establecer los datos para la conexión MQTT
   client.setCallback(callback);           // Establecer la función del callback para la llegada de mensajes en tópicos suscriptos
-
+  
   // Sensores y actuadores
   pinMode(sensorAgua, INPUT);            // Inicializar el DHT como entrada
 
+  //init rfid D8,D5,D6,D7
+  SPI.begin();
+  rfid.PCD_Init();
+
+  Serial.print(F("Reader :"));
+  rfid.PCD_DumpVersionToSerial();
 }
 
 void loop() {
@@ -324,13 +345,9 @@ void loop() {
   if (!client.connected()) {  // Controlar en cada ciclo la conexión con el servidor
     reconnect();              // Y recuperarla en caso de desconexión
   }
-  
   client.loop();              // Controlar si hay mensajes entrantes o para enviar al servidor
-
   if (!tasksEnabled) {
     // Wait 2 seconds to let system settle down
-    
-    
     delay(2000);
     // Enable task that will read values from the DHT sensor
     tasksEnabled = true;
@@ -338,27 +355,84 @@ void loop() {
       vTaskResume(tempTaskHandle);
     }
   }
+
+  readRFID();
   yield();
 }
 
-void getAirCondition{
-    float rzero = mq135_sensor.getRZero();
-  float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-  float resistance = mq135_sensor.getResistance();
-  float ppm = mq135_sensor.getPPM();
-  float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+void readRFID(void ) { /* function readRFID */
+  ////Read RFID card
 
-  Serial.print("MQ135 RZero: ");
-  Serial.print(rzero);
-  Serial.print("\t Corrected RZero: ");
-  Serial.print(correctedRZero);
-  Serial.print("\t Resistance: ");
-  Serial.print(resistance);
-  Serial.print("\t PPM: ");
-  Serial.print(ppm);
-  Serial.print("\t Corrected PPM: ");
-  Serial.print(correctedPPM);
-  Serial.println("ppm");
-
-  delay(300);
+  for (byte i = 0; i < 6; i++) {
+    key.keyByte[i] = 0xFF;
   }
+  // Look for new 1 cards
+  if ( ! rfid.PICC_IsNewCardPresent())
+    return;
+
+  // Verify if the NUID has been readed
+  if (  !rfid.PICC_ReadCardSerial())
+    return;
+
+  // Store NUID into nuidPICC array
+  for (byte i = 0; i < 4; i++) {
+    nuidPICC[i] = rfid.uid.uidByte[i];
+  }
+
+  Serial.print(F("RFID In dec: "));
+  String idStr = printHex(rfid.uid.uidByte, rfid.uid.size);
+  Serial.println();
+
+  // Halt PICC
+  rfid.PICC_HaltA();
+
+  // Stop encryption on PCD
+  rfid.PCD_StopCrypto1();
+
+// Publicar los datos en el tópio de telemetría para que el servidor los reciba
+    DynamicJsonDocument resp(256);
+    resp["idLeida"] =  idStr; 
+    char buffer[256];
+    serializeJson(resp, buffer);
+    client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
+    
+    Serial.print("Publicar mensaje [telemetry]: ");
+    Serial.println(buffer);
+  
+}
+
+//void getAirCondition(){
+//    float rzero = mq135_sensor.getRZero();
+//  float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+//  float resistance = mq135_sensor.getResistance();
+//  float ppm = mq135_sensor.getPPM();
+//  float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+//
+//  Serial.print("MQ135 RZero: ");
+//  Serial.print(rzero);
+//  Serial.print("\t Corrected RZero: ");
+//  Serial.print(correctedRZero);
+//  Serial.print("\t Resistance: ");
+//  Serial.print(resistance);
+//  Serial.print("\t PPM: ");
+//  Serial.print(ppm);
+//  Serial.print("\t Corrected PPM: ");
+//  Serial.print(correctedPPM);
+//  Serial.println("ppm");
+//
+//  delay(300);
+//  }
+
+  /**
+   Helper routine to dump a byte array as hex values to Serial.
+*/
+String printHex(byte *buffer, byte bufferSize) {
+  String bufferStr = ""; 
+  for (byte i = 0; i < bufferSize; i++) {
+//    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+//    Serial.print(buffer[i], HEX);
+    bufferStr = bufferStr+String(buffer[i], HEX);
+  }
+  Serial.print(bufferStr);
+  return bufferStr;
+}
