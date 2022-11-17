@@ -9,7 +9,7 @@
 /*========= CONSTANTES =========*/
 
 #define caldera 33
-
+#define bomba 25
 
 // Credenciales de la red WiFi
 const char* ssid = "HUAWEI-IoT";
@@ -131,29 +131,34 @@ void callback(char* topic, byte* payload, unsigned int length) {
     } else if (metodo == "prenderCaldera") {
       digitalWrite(caldera, HIGH); // Prender LED
       Serial.println("Caldera prendida");
-
-      // Actualizar el atributo relacionado
-      DynamicJsonDocument resp(256);
-      resp["estadoCaldera"] = digitalRead(caldera); // ojo el not !
-      char buffer[256];
-      serializeJson(resp, buffer);
-      client.publish("v1/devices/me/attributes", buffer);  //Topico para actualizar atributos
-      Serial.print("Publish message [attribute]: ");
-      Serial.println(buffer);
+      publicarAtributo("estadoCaldera", digitalRead(caldera)); // Actualizar el atributo relacionado
 
     } else if (metodo == "apagarCaldera") {
       digitalWrite(caldera, LOW); // Apagar LED
       Serial.println("Caldera apagada");
+      publicarAtributo("estadoCaldera", digitalRead(caldera)); // Actualizar el atributo relacionado
 
-      DynamicJsonDocument resp(256);
-      resp["estadoCaldera"] = digitalRead(caldera); // ojo el not !
-      char buffer[256];
-      serializeJson(resp, buffer);
-      client.publish("v1/devices/me/attributes", buffer);  //Topico para actualizar atributos
-      Serial.print("Publish message [attribute]: ");
-      Serial.println(buffer);
+    } else if (metodo == "prenderBomba") {
+      digitalWrite(bomba, HIGH); // Apagar LED
+      Serial.println("Bomba prendida");
+      publicarAtributo("estadoBomba", digitalRead(bomba)); // Actualizar el atributo relacionado
+
+    } else if (metodo == "apagarBomba") {
+      digitalWrite(bomba, LOW); // Apagar LED
+      Serial.println("Bomba apagada");
+      publicarAtributo("estadoBomba", digitalRead(bomba)); // Actualizar el atributo relacionado
     }
   }
+}
+
+void publicarAtributo(const String& nombreAtributo, int valorAtr) {
+  DynamicJsonDocument resp(256);
+  resp[nombreAtributo] = valorAtr; // ojo el not !
+  char buffer[256];
+  serializeJson(resp, buffer);
+  client.publish("v1/devices/me/attributes", buffer);  //Topico para actualizar atributos
+  Serial.print("Publish message [attribute]: ");
+  Serial.println(buffer);
 }
 
 // Establecer y mantener la conexión con el servidor MQTT (En este caso de ThingsBoard)
