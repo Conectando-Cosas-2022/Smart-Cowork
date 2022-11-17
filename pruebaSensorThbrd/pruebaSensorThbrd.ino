@@ -12,8 +12,8 @@
 
 
 // Credenciales de la red WiFi
-const char* ssid = "iPhone de Pilar";
-const char* password = "091662244";
+const char* ssid = "HUAWEI-IoT";
+const char* password = "ORTWiFiIoT";
 
 // Host de ThingsBoard
 const char* mqtt_server = "demo.thingsboard.io";
@@ -24,7 +24,7 @@ const char* token = "eI2MFjeRVWWvRYQuDO6G";
 
 #define sensorAgua 25
 
-//Configuramos una instancia oneWire para comunicarnos con cualquier dispositivo OneWire 
+//Configuramos una instancia oneWire para comunicarnos con cualquier dispositivo OneWire
 OneWire oneWire(sensorAgua);
 
 //Pasamos nuestra resferencia oneWire a la instancia de DallasTemperature
@@ -32,7 +32,7 @@ DallasTemperature sensors(&oneWire);
 
 /*========= VARIABLES =========*/
 
-// Objetos de conexión 
+// Objetos de conexión
 WiFiClient espClient;             // Objeto de conexión WiFi
 PubSubClient client(espClient);   // Objeto de conexión MQTT
 
@@ -81,7 +81,7 @@ void setup_wifi() {
 // Función de callback para recepción de mensajes MQTT (Tópicos a los que está suscrita la placa)
 // Se llama cada vez que arriba un mensaje entrante (En este ejemplo la placa se suscribirá al tópico: v1/devices/me/rpc/request/+)
 void callback(char* topic, byte* payload, unsigned int length) {
-  
+
   // Log en Monitor Serie
   Serial.print("Mensaje recibido [");
   Serial.print(topic);
@@ -104,43 +104,54 @@ void callback(char* topic, byte* payload, unsigned int length) {
     String metodo = incoming_message["method"]; // Obtener del objeto Json, el método RPC solicitado
 
     // Ejecutar una acción de acuerdo al método solicitado
-    if (metodo=="checkStatus") {  // Chequear el estado del dispositivo. Se debe responder utilizando el mismo request_number
-      
+    if (metodo == "checkStatus") { // Chequear el estado del dispositivo. Se debe responder utilizando el mismo request_number
+
       char outTopic[128];
-      ("v1/devices/me/rpc/response/"+_request_id).toCharArray(outTopic,128);
-      
+      ("v1/devices/me/rpc/response/" + _request_id).toCharArray(outTopic, 128);
+
       DynamicJsonDocument resp(256);
       resp["status"] = true;
       char buffer[256];
       serializeJson(resp, buffer);
       client.publish(outTopic, buffer);
-      
-    } else if (metodo=="setLedStatus") {  // Establecer el estado del led y reflejar en el atributo relacionado
-      
+
+    } else if (metodo == "setLedStatus") { // Establecer el estado del led y reflejar en el atributo relacionado
+
       boolean estado = incoming_message["params"]; // Leer los parámetros del método
 
       if (estado) {
-        digitalWrite(caldera, LOW); // Encender LED 
+        digitalWrite(caldera, LOW); // Encender LED
         Serial.println("Encender LED");
       } else {
         digitalWrite(caldera, HIGH); // Apagar LED
         Serial.println("Apagar LED");
       }
 
+
+    } else if (metodo == "prenderCaldera") {
+      digitalWrite(caldera, HIGH); // Prender LED
+      Serial.println("Caldera prendida");
+
       // Actualizar el atributo relacionado
       DynamicJsonDocument resp(256);
-      resp["estado"] = !digitalRead(caldera);
+      resp["estadoCaldera"] = digitalRead(caldera); // ojo el not !
       char buffer[256];
       serializeJson(resp, buffer);
       client.publish("v1/devices/me/attributes", buffer);  //Topico para actualizar atributos
       Serial.print("Publish message [attribute]: ");
       Serial.println(buffer);
-    }else if(metodo=="prenderCaldera"){
-      digitalWrite(caldera, HIGH); // Prender LED
-        Serial.println("Cladera prendida");
-    }else if(metodo=="apagarCaldera"){
+
+    } else if (metodo == "apagarCaldera") {
       digitalWrite(caldera, LOW); // Apagar LED
-        Serial.println("Cladera apagada");
+      Serial.println("Caldera apagada");
+
+      DynamicJsonDocument resp(256);
+      resp["estadoCaldera"] = digitalRead(caldera); // ojo el not !
+      char buffer[256];
+      serializeJson(resp, buffer);
+      client.publish("v1/devices/me/attributes", buffer);  //Topico para actualizar atributos
+      Serial.print("Publish message [attribute]: ");
+      Serial.println(buffer);
     }
   }
 }
@@ -152,18 +163,18 @@ void reconnect() {
     Serial.print("Intentando conectar MQTT...");
     if (client.connect("ESP32", token, token)) {  //Nombre del Device y Token para conectarse
       Serial.println("¡Conectado!");
-      
+
       // Una vez conectado, suscribirse al tópico para recibir solicitudes RPC
       client.subscribe("v1/devices/me/rpc/request/+");
-      
+
     } else {
-      
+
       Serial.print("Error, rc = ");
       Serial.print(client.state());
       Serial.println("Reintenar en 5 segundos...");
       // Esperar 5 segundos antes de reintentar
       delay(5000);
-      
+
     }
   }
 }
@@ -191,14 +202,14 @@ void loop() {
   if (!client.connected()) {  // Controlar en cada ciclo la conexión con el servidor
     reconnect();              // Y recuperarla en caso de desconexión
   }
-  
+
   client.loop();              // Controlar si hay mensajes entrantes o para enviar al servidor
 
   // === Realizar las tareas asignadas al dispositivo ===
   // En este caso se medirá temperatura y humedad para reportar periódicamente
   // El control de tiempo se hace con millis para que no sea bloqueante y en "paralelo" completar
   // ciclos del bucle principal
-  
+
   unsigned long now = millis();
   if (now - lastMsg > msgPeriod) {
     lastMsg = now;
@@ -206,24 +217,24 @@ void loop() {
     Serial.print("Solicitando temperaturas...");
     sensors.requestTemperatures(); //Enviamos el comando para obtener la temperatura
     Serial.println("Terminado");
-    
-     temperature = sensors.getTempCByIndex(0);  // Leer la temperatura
 
-      Serial.print("Temperatura del dispositivo uno (index 0): ");
+    temperature = sensors.getTempCByIndex(0);  // Leer la temperatura
+
+    Serial.print("Temperatura del dispositivo uno (index 0): ");
     Serial.print(temperature);
     Serial.println(" °C");
 
     delay(500);
-     
+
     // Publicar los datos en el tópio de telemetría para que el servidor los reciba
     DynamicJsonDocument resp(256);
     resp["temperature"] = temperature; //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
     char buffer[256];
     serializeJson(resp, buffer);
     client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
-    
+
     Serial.print("Publicar mensaje [telemetry]: ");
     Serial.println(buffer);
-    
+
   }
 }
