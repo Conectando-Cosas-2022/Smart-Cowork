@@ -215,45 +215,7 @@ bool getTemperature() {
     return false;
   }
 
-  float heatIndex = dht.computeHeatIndex(newValues.temperature, newValues.humidity);
-  float dewPoint = dht.computeDewPoint(newValues.temperature, newValues.humidity);
-  float cr = dht.getComfortRatio(cf, newValues.temperature, newValues.humidity);
-
-  String comfortStatus;
-  switch (cf) {
-    case Comfort_OK:
-      comfortStatus = "Comfort_OK";
-      break;
-    case Comfort_TooHot:
-      comfortStatus = "Comfort_TooHot";
-      break;
-    case Comfort_TooCold:
-      comfortStatus = "Comfort_TooCold";
-      break;
-    case Comfort_TooDry:
-      comfortStatus = "Comfort_TooDry";
-      break;
-    case Comfort_TooHumid:
-      comfortStatus = "Comfort_TooHumid";
-      break;
-    case Comfort_HotAndHumid:
-      comfortStatus = "Comfort_HotAndHumid";
-      break;
-    case Comfort_HotAndDry:
-      comfortStatus = "Comfort_HotAndDry";
-      break;
-    case Comfort_ColdAndHumid:
-      comfortStatus = "Comfort_ColdAndHumid";
-      break;
-    case Comfort_ColdAndDry:
-      comfortStatus = "Comfort_ColdAndDry";
-      break;
-    default:
-      comfortStatus = "Unknown:";
-      break;
-  };
-
-  Serial.println(" T:" + String(newValues.temperature) + " H:" + String(newValues.humidity) + " I:" + String(heatIndex) + " D:" + String(dewPoint) + " " + comfortStatus);
+  Serial.println(" T:" + String(newValues.temperature) + " H:" + String(newValues.humidity));
 
   // Publicar los datos en el tópio de telemetría para que el servidor los reciba
   DynamicJsonDocument resp(256);
@@ -307,13 +269,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     // Ejecutar una acción de acuerdo al método solicitado
     if (metodo == "abrirVentanas") {  // Establecer el estado del led y reflejar en el atributo relacionado
-      abrirVentana1();
-      abrirVentana2();
+      abrirVentanas();
       publicarAtributo("estadoVentanas", true);
 
     } else if (metodo == "cerrarVentanas") {
-      cerrarVentana1();
-      cerrarVentana2();
+      cerrarVentanas();
       publicarAtributo("estadoVentanas", false);
 
     } else if (metodo == "prenderVentilador") {
@@ -340,31 +300,20 @@ void publicarAtributo(const String& nombreAtributo, int valorAtr) {
 }
 
 // METODOS PARA ABRIR VENTANAS///
-void abrirVentana1() {
+void abrirVentanas() {
   for (int pos = 0; pos <= 55; pos += 1) {
     servo1.write(pos);
+    servo2.write(55-pos);
     delay(20);  // waits 15ms to reach the position
   }
 }
 
-void abrirVentana2() {
-  for (int pos = 55; pos >= 0; pos -= 1) {
-    servo2.write(pos);
-    delay(20);  // waits 15ms to reach the position
-  }
-}
-
-void cerrarVentana1() {
+void cerrarVentanas() {
   for (int pos = 55; pos >= 0; pos -= 1) {
     // in steps of 1 degree
     servo1.write(pos);
-    delay(15);  // waits 15ms to reach the position
-  }
-}
-void cerrarVentana2() {
-  for (int pos = 0; pos <= 55; pos += 1) {
-    servo2.write(pos);
-    delay(20);  // waits 15ms to reach the position
+    servo2.write(55-pos);
+    delay(15); // waits 15ms to reach the position
   }
 }
 
@@ -426,4 +375,5 @@ void loop() {
 
   yield();
 }
+
 
