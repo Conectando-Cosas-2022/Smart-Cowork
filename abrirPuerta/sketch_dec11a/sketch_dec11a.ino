@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-#define SERVO_PUERTA 32  // ESP32 pin GIOP26 connected to servo motor
+#define SERVO_PUERTA 13  // ESP32 pin GIOP26 connected to servo motor
 
 Servo servo_puerta;  // derecha mirando desde afuera --> pos =0 esta cerrado
 

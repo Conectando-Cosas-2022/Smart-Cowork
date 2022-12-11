@@ -6,8 +6,6 @@
 
 Servo servo1;  // derecha mirando desde afuera --> pos =0 esta cerrado
 Servo servo2;  // izquierda mirando desde afuera --> pos = 55 esta cerrado
-int pos_servo1 = 0;
-int pos_servo2 = 0;
 
 
 void setup() {
@@ -20,41 +18,24 @@ void setup() {
 }
 
 void loop() {
-  abrirVentana2();
-  cerrarVentana2();
+  abrirVentanas();
+  delay(100);
+  cerrarVentanas();
 }
-
 
 void abrirVentanas() {
-  abrirVentana1();
-  abrirVentana2();
-}
-
-
-void abrirVentana1() {
   for (int pos = 0; pos <= 55; pos += 1) {
     servo1.write(pos);
+    servo2.write(55-pos);
     delay(20);  // waits 15ms to reach the position
   }
 }
 
-void abrirVentana2() {
-  for (int pos = 55; pos >= 0; pos -= 1) {
-    servo2.write(pos);
-    delay(20);  // waits 15ms to reach the position
-  }
-}
-
-void cerrarVentana1() {
+void cerrarVentanas() {
   for (int pos = 55; pos >= 0; pos -= 1) {
     // in steps of 1 degree
     servo1.write(pos);
+    servo2.write(56-pos);
     delay(15);  // waits 15ms to reach the position
-  }
-}
-void cerrarVentana2() {
-  for (int pos = 0; pos <= 55; pos += 1) {
-    servo2.write(pos);
-    delay(20);  // waits 15ms to reach the position
   }
 }
