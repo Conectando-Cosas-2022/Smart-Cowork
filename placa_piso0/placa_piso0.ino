@@ -49,10 +49,9 @@ PubSubClient client(espClient);   // Objeto de conexión MQTT
 
 // Declaración de variables para los datos a manipular
 unsigned long lastMsg = 0;  // Control de tiempo de reporte
-int msgPeriod = 2000;       // Actualizar los datos cada 2 segundos
+int msgPeriod = 10000;       // Actualizar los datos cada 10 segundos
 float humidity = 0;
 float temperature = 0;
-boolean led_state = false;
 
 //Variables RFID
 byte nuidPICC[4] = { 0, 0, 0, 0 };
