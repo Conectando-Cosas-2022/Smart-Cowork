@@ -5,15 +5,27 @@
 #include <ArduinoJson.h>  // Biblioteca para manejar Json en Arduino
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <MFRC522.h>  //https://github.com/miguelbalboa/rfid
 
-/*========= CONSTANTES =========*/
+
+
+/*========= DEFINICION DE PINES =========*/
 
 #define caldera 33
 #define bomba 25
+#define SERVO_PUERTA 13  // ESP32 pin GIOP26 connected to servo motor
 
-// Credenciales de la red WiFi
-const char* ssid = "HUAWEI-IoT";
-const char* password = "ORTWiFiIoT";
+
+#define SS_PIN 5
+#define RST_PIN 2
+#define sensorAgua 4
+
+
+/*========= PARAMETROS WIFI =========*/
+const char* ssid = "iPhone de Pilar";
+const char* password = "091662244";
+// const char* ssid = "HUAWEI-IoT";
+// const char* password = "ORTWiFiIoT";
 
 // Host de ThingsBoard
 const char* mqtt_server = "demo.thingsboard.io";
@@ -22,7 +34,6 @@ const int mqtt_port = 1883;
 // Token del dispositivo en ThingsBoard
 const char* token = "eI2MFjeRVWWvRYQuDO6G";
 
-#define sensorAgua 25
 
 //Configuramos una instancia oneWire para comunicarnos con cualquier dispositivo OneWire
 OneWire oneWire(sensorAgua);
@@ -42,6 +53,11 @@ int msgPeriod = 2000;       // Actualizar los datos cada 2 segundos
 float humidity = 0;
 float temperature = 0;
 boolean led_state = false;
+
+//Variables RFID
+byte nuidPICC[4] = { 0, 0, 0, 0 };
+MFRC522::MIFARE_Key key;
+MFRC522 rfid = MFRC522(SS_PIN, RST_PIN);
 
 // Mensajes y buffers
 #define MSG_BUFFER_SIZE  (50)
@@ -115,19 +131,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
       serializeJson(resp, buffer);
       client.publish(outTopic, buffer);
 
-    } else if (metodo == "setLedStatus") { // Establecer el estado del led y reflejar en el atributo relacionado
-
-      boolean estado = incoming_message["params"]; // Leer los parámetros del método
-
-      if (estado) {
-        digitalWrite(caldera, LOW); // Encender LED
-        Serial.println("Encender LED");
-      } else {
-        digitalWrite(caldera, HIGH); // Apagar LED
-        Serial.println("Apagar LED");
-      }
-
-
     } else if (metodo == "prenderCaldera") {
       digitalWrite(caldera, HIGH); // Prender LED
       Serial.println("Caldera prendida");
@@ -184,6 +187,55 @@ void reconnect() {
   }
 }
 
+void readRFID(void) { /* function readRFID */
+  ////Read RFID card
+
+  for (byte i = 0; i < 6; i++) {
+    key.keyByte[i] = 0xFF;
+  }
+  // Look for new 1 cards
+  if (!rfid.PICC_IsNewCardPresent())
+    return;
+
+  // Verify if the NUID has been readed
+  if (!rfid.PICC_ReadCardSerial())
+    return;
+
+  // Store NUID into nuidPICC array
+  for (byte i = 0; i < 4; i++) {
+    nuidPICC[i] = rfid.uid.uidByte[i];
+  }
+
+  Serial.print(F("RFID In dec: "));
+  String idStr = printHex(rfid.uid.uidByte, rfid.uid.size);
+  Serial.println();
+
+  // Halt PICC
+  rfid.PICC_HaltA();
+
+  // Stop encryption on PCD
+  rfid.PCD_StopCrypto1();
+
+  // Publicar los datos en el tópio de telemetría para que el servidor los reciba
+  publicarTelemetria("idLeida",idStr);
+}
+
+
+/**
+   Helper routine to dump a byte array as hex values to Serial.
+*/
+String printHex(byte* buffer, byte bufferSize) {
+  String bufferStr = "";
+  for (byte i = 0; i < bufferSize; i++) {
+    //    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    //    Serial.print(buffer[i], HEX);
+    bufferStr = bufferStr + String(buffer[i], HEX);
+  }
+  Serial.print(bufferStr);
+  return bufferStr;
+}
+
+
 /*========= SETUP =========*/
 
 void setup() {
@@ -197,6 +249,13 @@ void setup() {
   pinMode(caldera, OUTPUT);       // Inicializar el LED como salida
   pinMode(sensorAgua, INPUT);            // Inicializar el DHT como entrada
   sensors.begin();
+
+  //init rfid D8,D5,D6,D7
+  SPI.begin();
+  rfid.PCD_Init();
+
+  Serial.print(F("Reader :"));
+  rfid.PCD_DumpVersionToSerial();
 }
 
 /*========= BUCLE PRINCIPAL =========*/
@@ -207,14 +266,9 @@ void loop() {
   if (!client.connected()) {  // Controlar en cada ciclo la conexión con el servidor
     reconnect();              // Y recuperarla en caso de desconexión
   }
-
   client.loop();              // Controlar si hay mensajes entrantes o para enviar al servidor
 
   // === Realizar las tareas asignadas al dispositivo ===
-  // En este caso se medirá temperatura y humedad para reportar periódicamente
-  // El control de tiempo se hace con millis para que no sea bloqueante y en "paralelo" completar
-  // ciclos del bucle principal
-
   unsigned long now = millis();
   if (now - lastMsg > msgPeriod) {
     lastMsg = now;
@@ -232,14 +286,24 @@ void loop() {
     delay(500);
 
     // Publicar los datos en el tópio de telemetría para que el servidor los reciba
-    DynamicJsonDocument resp(256);
-    resp["temperature"] = temperature; //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
+    publicarTelemetria("temperature", temperature);
+
+    readRFID();
+// no copie una funcion que se llama yield
+
+  }
+}
+
+
+void publicarTelemetria(const String& key, int value){
+   DynamicJsonDocument resp(256);
+    resp[key] = value; //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
     char buffer[256];
     serializeJson(resp, buffer);
     client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
 
     Serial.print("Publicar mensaje [telemetry]: ");
     Serial.println(buffer);
-
-  }
 }
+
+

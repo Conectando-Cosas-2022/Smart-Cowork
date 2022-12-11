@@ -1,14 +1,15 @@
-#include "DHTesp.h" // Click here to get the library: http://librarymanager/All#DHTesp
+#include "DHTesp.h"  // Click here to get the library: http://librarymanager/All#DHTesp
 #include <Ticker.h>
-#include <WiFi.h>  // Biblioteca para generar la conexión a internet a través de WiFi
-#include <PubSubClient.h> // Biblioteca para generar la conexión MQTT con un servidor (Ej.: ThingsBoard)
-#include <ArduinoJson.h>  // Biblioteca para manejar Json en Arduino
+#include <WiFi.h>          // Biblioteca para generar la conexión a internet a través de WiFi
+#include <PubSubClient.h>  // Biblioteca para generar la conexión MQTT con un servidor (Ej.: ThingsBoard)
+#include <ArduinoJson.h>   // Biblioteca para manejar Json en Arduino
 #include <MQ135.h>
-#include <SPI.h>//https://www.arduino.cc/en/reference/SPI
-#include <MFRC522.h>//https://github.com/miguelbalboa/rfid
+#include <SPI.h>  //https://www.arduino.cc/en/reference/SPI
+#include <Servo.h>
+
 
 #ifndef ESP32
-#pragma message(THIS EXAMPLE IS FOR ESP32 ONLY!)
+#pragma message(THIS EXAMPLE IS FOR ESP32 ONLY !)
 #error Select ESP32 board.
 #endif
 
@@ -19,15 +20,11 @@
 /* the task every 20 seconds                                  */
 /**************************************************************/
 
-DHTesp dht;
-
-// Credenciales de la red WiFi
+/*========= PARAMETROS WIFI =========*/
 //const char* ssid = "HUAWEI-IoT";
 //const char* password = "ORTWiFiIoT";
-const char* ssid = "iPhone de Pilar";
-
-const char* password = "091662244";
-
+const char* ssid = "dtpub";
+const char* password = "domopublico";
 
 // Host de ThingsBoard
 const char* mqtt_server = "demo.thingsboard.io";
@@ -37,22 +34,30 @@ const int mqtt_port = 1883;
 const char* token = "6kP90GSF7F5VJXTEdkU1";
 
 //Parameters
-const int ipaddress[4] = {103, 97, 67, 25};
+const int ipaddress[4] = { 103, 97, 67, 25 };
 
-#define sensorAgua 25
-#define PIN_MQ135 33
-#define SS_PIN 5
-#define RST_PIN 2
+/*========= DEFINICION DE PINES =========*/
+#define dhtPin 25
+#define PIN_MQ135 34
+
+#define pin_ventilador 33
+#define SERVO_PIN1 26  // ESP32 pin GIOP26 connected to servo motor
+#define SERVO_PIN2 27  // ESP32 pin GIOP26 connected to servo motor
+
 
 
 /*========= VARIABLES =========*/
 
 MQ135 mq135_sensor(PIN_MQ135);
 
+Servo servo1;  // derecha mirando desde afuera --> pos =0 esta cerrado
+Servo servo2;  // izquierda mirando desde afuera --> pos = 55 esta cerrado
+
+DHTesp dht;
 
 // Objetos de conexión
-WiFiClient espClient;             // Objeto de conexión WiFi
-PubSubClient client(espClient);   // Objeto de conexión MQTT
+WiFiClient espClient;            // Objeto de conexión WiFi
+PubSubClient client(espClient);  // Objeto de conexión MQTT
 
 // Declaración de variables para los datos a manipular
 unsigned long lastMsg = 0;  // Control de tiempo de reporte
@@ -61,13 +66,8 @@ float humedad = 0;
 float tempAmbiente = 0;
 boolean led_state = false;
 
-//Variables RFID
-byte nuidPICC[4] = {0, 0, 0, 0};
-MFRC522::MIFARE_Key key;
-MFRC522 rfid = MFRC522(SS_PIN, RST_PIN);
-
 // Mensajes y buffers
-#define MSG_BUFFER_SIZE  (50)
+#define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
 char msg2[MSG_BUFFER_SIZE];
 
@@ -75,8 +75,9 @@ char msg2[MSG_BUFFER_SIZE];
 DynamicJsonDocument incoming_message(256);
 
 
-void tempTask(void *pvParameters);
+void tempTask(void* pvParameters);
 bool getTemperature();
+void getAirQuality();
 void triggerGetTemp();
 
 /** Task handle for the light value read task */
@@ -88,7 +89,6 @@ ComfortState cf;
 /** Flag if task should run */
 bool tasksEnabled = false;
 /** Pin number for DHT11 data pin */
-int dhtPin = 25;
 
 
 // Inicializar la conexión WiFi
@@ -99,7 +99,7 @@ void setup_wifi() {
   Serial.print("Conectando a: ");
   Serial.println(ssid);
 
-  WiFi.mode(WIFI_STA); // Declarar la ESP como STATION
+  WiFi.mode(WIFI_STA);  // Declarar la ESP como STATION
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -108,6 +108,13 @@ void setup_wifi() {
   }
 
   randomSeed(micros());
+
+  servo1.attach(SERVO_PIN1);  // attaches the servo on ESP32 pin
+  servo2.attach(SERVO_PIN2);  // attaches the servo on ESP32 pin
+
+  servo1.write(0);
+  servo2.write(55);
+  delay(20);
 
   Serial.println("");
   Serial.println("¡Conectado!");
@@ -132,13 +139,13 @@ bool initTemp() {
 
   // Start task to get temperature
   xTaskCreatePinnedToCore(
-    tempTask,                       /* Function to implement the task */
-    "tempTask ",                    /* Name of the task */
-    4000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    5,                              /* Priority of the task */
-    &tempTaskHandle,                /* Task handle. */
-    1);                             /* Core where the task should run */
+    tempTask,        /* Function to implement the task */
+    "tempTask ",     /* Name of the task */
+    4000,            /* Stack size in words */
+    NULL,            /* Task input parameter */
+    5,               /* Priority of the task */
+    &tempTaskHandle, /* Task handle. */
+    1);              /* Core where the task should run */
 
   if (tempTaskHandle == NULL) {
     Serial.println("Failed to start task for temperature update");
@@ -166,17 +173,29 @@ void triggerGetTemp() {
    @param pvParameters
       pointer to task parameters
 */
-void tempTask(void *pvParameters) {
+void tempTask(void* pvParameters) {
   Serial.println("tempTask loop started");
-  while (1) // tempTask loop
+  while (1)  // tempTask loop
   {
     if (tasksEnabled) {
       // Get temperature values
       getTemperature();
+      getAirQuality();
     }
     // Got sleep again
     vTaskSuspend(NULL);
   }
+}
+
+void publicarTelemetria(const String& key, int value){
+   DynamicJsonDocument resp(256);
+    resp[key] = value; //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
+    char buffer[256];
+    serializeJson(resp, buffer);
+    client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
+
+    Serial.print("Publicar mensaje [telemetry]: ");
+    Serial.println(buffer);
 }
 
 /**
@@ -235,19 +254,31 @@ bool getTemperature() {
   };
 
   Serial.println(" T:" + String(newValues.temperature) + " H:" + String(newValues.humidity) + " I:" + String(heatIndex) + " D:" + String(dewPoint) + " " + comfortStatus);
-  
+
   // Publicar los datos en el tópio de telemetría para que el servidor los reciba
-    DynamicJsonDocument resp(256);
-    resp["tempAmbiente"] =  String(newValues.temperature); //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
-    char buffer[256];
-    serializeJson(resp, buffer);
-    client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
-    
-    Serial.print("Publicar mensaje [telemetry]: ");
-    Serial.println(buffer);
-  
+  DynamicJsonDocument resp(256);
+  resp["tempAmbiente"] = String(newValues.temperature);  //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
+  char buffer[256];
+  serializeJson(resp, buffer);
+  client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
+
+  Serial.print("Publicar mensaje [telemetry]: ");
+  Serial.println(buffer);
+
   return true;
 }
+
+
+void getAirQuality() {
+    int sensorValue = analogRead(PIN_MQ135);  // read analog input pin 0
+    Serial.print("AirQuality=");
+    Serial.print(sensorValue, DEC);  // prints the value read
+    Serial.println(" PPM");
+    delay(100);  // wait 100ms for next reading 
+
+    //publica telemetría de la lectura del sensor MQ135 a Thingsboard
+    publicarTelemetria("ppm_Aire", sensorValue);
+  }
 
 // Función de callback para recepción de mensajes MQTT (Tópicos a los que está suscrita la placa)
 // Se llama cada vez que arriba un mensaje entrante (En este ejemplo la placa se suscribirá al tópico: v1/devices/me/rpc/request/+)
@@ -266,29 +297,74 @@ void callback(char* topic, byte* payload, unsigned int length) {
   String _topic = String(topic);
 
   // Detectar de qué tópico viene el "mensaje"
-  if (_topic.startsWith("v1/devices/me/rpc/request/")) { // El servidor "me pide que haga algo" (RPC)
+  if (_topic.startsWith("v1/devices/me/rpc/request/")) {  // El servidor "me pide que haga algo" (RPC)
     // Obtener el número de solicitud (request number)
     String _request_id = _topic.substring(26);
 
     // Leer el objeto JSON (Utilizando ArduinoJson)
-    deserializeJson(incoming_message, payload); // Interpretar el cuerpo del mensaje como Json
-    String metodo = incoming_message["method"]; // Obtener del objeto Json, el método RPC solicitado
+    deserializeJson(incoming_message, payload);  // Interpretar el cuerpo del mensaje como Json
+    String metodo = incoming_message["method"];  // Obtener del objeto Json, el método RPC solicitado
 
     // Ejecutar una acción de acuerdo al método solicitado
-    if (metodo == "checkStatus") { // Chequear el estado del dispositivo. Se debe responder utilizando el mismo request_number
+    if (metodo == "abrirVentanas") {  // Establecer el estado del led y reflejar en el atributo relacionado
+      abrirVentana1();
+      abrirVentana2();
+      publicarAtributo("estadoVentanas", true);
 
-      char outTopic[128];
-      ("v1/devices/me/rpc/response/" + _request_id).toCharArray(outTopic, 128);
+    } else if (metodo == "cerrarVentanas") {
+      cerrarVentana1();
+      cerrarVentana2();
+      publicarAtributo("estadoVentanas", false);
 
-      DynamicJsonDocument resp(256);
-      resp["status"] = true;
-      char buffer[256];
-      serializeJson(resp, buffer);
-      client.publish(outTopic, buffer);
+    } else if (metodo == "prenderVentilador") {
+      digitalWrite(pin_ventilador, HIGH);
+      Serial.println("Ventilador prendido");
+      publicarAtributo("estadoVentilador", digitalRead(pin_ventilador));
 
-    } else if (metodo == "setLedStatus") { // Establecer el estado del led y reflejar en el atributo relacionado
-
+    } else if (metodo == "apagarVentilador") {
+      digitalWrite(pin_ventilador, LOW);
+      Serial.println("Ventilador apagado");
+      publicarAtributo("estadoVentilador", digitalRead(pin_ventilador));
     }
+  }
+}
+
+void publicarAtributo(const String& nombreAtributo, int valorAtr) {
+  DynamicJsonDocument resp(256);
+  resp[nombreAtributo] = valorAtr;  // ojo el not !
+  char buffer[256];
+  serializeJson(resp, buffer);
+  client.publish("v1/devices/me/attributes", buffer);  //Topico para actualizar atributos
+  Serial.print("Publish message [attribute]: ");
+  Serial.println(buffer);
+}
+
+// METODOS PARA ABRIR VENTANAS///
+void abrirVentana1() {
+  for (int pos = 0; pos <= 55; pos += 1) {
+    servo1.write(pos);
+    delay(20);  // waits 15ms to reach the position
+  }
+}
+
+void abrirVentana2() {
+  for (int pos = 55; pos >= 0; pos -= 1) {
+    servo2.write(pos);
+    delay(20);  // waits 15ms to reach the position
+  }
+}
+
+void cerrarVentana1() {
+  for (int pos = 55; pos >= 0; pos -= 1) {
+    // in steps of 1 degree
+    servo1.write(pos);
+    delay(15);  // waits 15ms to reach the position
+  }
+}
+void cerrarVentana2() {
+  for (int pos = 0; pos <= 55; pos += 1) {
+    servo2.write(pos);
+    delay(20);  // waits 15ms to reach the position
   }
 }
 
@@ -310,14 +386,12 @@ void reconnect() {
       Serial.println("Reintenar en 5 segundos...");
       // Esperar 5 segundos antes de reintentar
       delay(5000);
-
     }
   }
 }
 
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   Serial.println();
   Serial.println("DHT ESP32 example with tasks");
@@ -325,27 +399,21 @@ void setup()
   // Signal end of setup() to tasks
   tasksEnabled = true;
 
-  setup_wifi();                           // Establecer la conexión WiFi
-  client.setServer(mqtt_server, mqtt_port);// Establecer los datos para la conexión MQTT
-  client.setCallback(callback);           // Establecer la función del callback para la llegada de mensajes en tópicos suscriptos
-  
+  setup_wifi();                              // Establecer la conexión WiFi
+  client.setServer(mqtt_server, mqtt_port);  // Establecer los datos para la conexión MQTT
+  client.setCallback(callback);              // Establecer la función del callback para la llegada de mensajes en tópicos suscriptos
+
   // Sensores y actuadores
-  pinMode(sensorAgua, INPUT);            // Inicializar el DHT como entrada
-
-  //init rfid D8,D5,D6,D7
-  SPI.begin();
-  rfid.PCD_Init();
-
-  Serial.print(F("Reader :"));
-  rfid.PCD_DumpVersionToSerial();
+  pinMode(dhtPin, INPUT);  // Inicializar el DHT como entrada
+  pinMode(PIN_MQ135, INPUT);
 }
 
 void loop() {
-   // === Conexión e intercambio de mensajes MQTT ===
+  // === Conexión e intercambio de mensajes MQTT ===
   if (!client.connected()) {  // Controlar en cada ciclo la conexión con el servidor
     reconnect();              // Y recuperarla en caso de desconexión
   }
-  client.loop();              // Controlar si hay mensajes entrantes o para enviar al servidor
+  client.loop();  // Controlar si hay mensajes entrantes o para enviar al servidor
   if (!tasksEnabled) {
     // Wait 2 seconds to let system settle down
     delay(2000);
@@ -356,83 +424,6 @@ void loop() {
     }
   }
 
-  readRFID();
   yield();
 }
 
-void readRFID(void ) { /* function readRFID */
-  ////Read RFID card
-
-  for (byte i = 0; i < 6; i++) {
-    key.keyByte[i] = 0xFF;
-  }
-  // Look for new 1 cards
-  if ( ! rfid.PICC_IsNewCardPresent())
-    return;
-
-  // Verify if the NUID has been readed
-  if (  !rfid.PICC_ReadCardSerial())
-    return;
-
-  // Store NUID into nuidPICC array
-  for (byte i = 0; i < 4; i++) {
-    nuidPICC[i] = rfid.uid.uidByte[i];
-  }
-
-  Serial.print(F("RFID In dec: "));
-  String idStr = printHex(rfid.uid.uidByte, rfid.uid.size);
-  Serial.println();
-
-  // Halt PICC
-  rfid.PICC_HaltA();
-
-  // Stop encryption on PCD
-  rfid.PCD_StopCrypto1();
-
-// Publicar los datos en el tópio de telemetría para que el servidor los reciba
-    DynamicJsonDocument resp(256);
-    resp["idLeida"] =  idStr; 
-    char buffer[256];
-    serializeJson(resp, buffer);
-    client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
-    
-    Serial.print("Publicar mensaje [telemetry]: ");
-    Serial.println(buffer);
-  
-}
-
-//void getAirCondition(){
-//    float rzero = mq135_sensor.getRZero();
-//  float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-//  float resistance = mq135_sensor.getResistance();
-//  float ppm = mq135_sensor.getPPM();
-//  float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
-//
-//  Serial.print("MQ135 RZero: ");
-//  Serial.print(rzero);
-//  Serial.print("\t Corrected RZero: ");
-//  Serial.print(correctedRZero);
-//  Serial.print("\t Resistance: ");
-//  Serial.print(resistance);
-//  Serial.print("\t PPM: ");
-//  Serial.print(ppm);
-//  Serial.print("\t Corrected PPM: ");
-//  Serial.print(correctedPPM);
-//  Serial.println("ppm");
-//
-//  delay(300);
-//  }
-
-  /**
-   Helper routine to dump a byte array as hex values to Serial.
-*/
-String printHex(byte *buffer, byte bufferSize) {
-  String bufferStr = ""; 
-  for (byte i = 0; i < bufferSize; i++) {
-//    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
-//    Serial.print(buffer[i], HEX);
-    bufferStr = bufferStr+String(buffer[i], HEX);
-  }
-  Serial.print(bufferStr);
-  return bufferStr;
-}
