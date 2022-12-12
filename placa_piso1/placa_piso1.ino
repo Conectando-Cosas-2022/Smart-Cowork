@@ -13,13 +13,6 @@
 #error Select ESP32 board.
 #endif
 
-/**************************************************************/
-/* Example how to read DHT sensors from an ESP32 using multi- */
-/* tasking.                                                   */
-/* This example depends on the Ticker library to wake up      */
-/* the task every 20 seconds                                  */
-/**************************************************************/
-
 /*========= PARAMETROS WIFI =========*/
 //const char* ssid = "HUAWEI-IoT";
 //const char* password = "ORTWiFiIoT";
@@ -43,6 +36,8 @@ const int ipaddress[4] = { 103, 97, 67, 25 };
 #define pin_ventilador 33
 #define SERVO_PIN1 26  // ESP32 pin GIOP26 connected to servo motor
 #define SERVO_PIN2 27  // ESP32 pin GIOP26 connected to servo motor
+#define pin_SmartFilm1 13
+#define pin_SmartFilm2 14
 
 
 

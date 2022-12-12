@@ -6,6 +6,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <MFRC522.h>  //https://github.com/miguelbalboa/rfid
+#include <Servo.h>
 
 
 
@@ -34,6 +35,7 @@ const int mqtt_port = 1883;
 // Token del dispositivo en ThingsBoard
 const char* token = "eI2MFjeRVWWvRYQuDO6G";
 
+/*========= CREACIÓN DE OBJETOS =========*/
 
 //Configuramos una instancia oneWire para comunicarnos con cualquier dispositivo OneWire
 OneWire oneWire(sensorAgua);
@@ -41,13 +43,14 @@ OneWire oneWire(sensorAgua);
 //Pasamos nuestra resferencia oneWire a la instancia de DallasTemperature
 DallasTemperature sensors(&oneWire);
 
-/*========= VARIABLES =========*/
+//Creo objeto servo
+Servo servo_puerta; 
 
 // Objetos de conexión
 WiFiClient espClient;             // Objeto de conexión WiFi
 PubSubClient client(espClient);   // Objeto de conexión MQTT
 
-// Declaración de variables para los datos a manipular
+// Declaración de variables para los tiempos de trigger
 unsigned long lastMsg = 0;  // Control de tiempo de reporte
 int msgPeriod = 10000;       // Actualizar los datos cada 10 segundos
 float humidity = 0;
@@ -149,7 +152,30 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(bomba, LOW); // Apagar LED
       Serial.println("Bomba apagada");
       publicarAtributo("estadoBomba", digitalRead(bomba)); // Actualizar el atributo relacionado
+    }else if (metodo == "abrirPuerta") {
+      abrirPuerta();
+      Serial.println("Puerta abierta");
+      publicarAtributo("estadoPuerta", true); // Actualizar el atributo relacionado
+
+    }else if (metodo == "cerrarPuerta") {
+      cerrarPuerta();
+      Serial.println("Puerta cerrada");
+      publicarAtributo("estadoPuerta", false); // Actualizar el atributo relacionado
     }
+  }
+}
+
+void abrirPuerta() {
+  for (int pos = 0; pos <= 120; pos += 1) {
+    servo_puerta.write(pos);
+    delay(15);  // waits 15ms to reach the position
+  }
+}
+
+void cerrarPuerta() {
+  for (int pos = 120; pos >= 0; pos -= 1) {
+    servo_puerta.write(pos);
+    delay(15);  // waits 15ms to reach the position
   }
 }
 
@@ -216,7 +242,14 @@ void readRFID(void) { /* function readRFID */
   rfid.PCD_StopCrypto1();
 
   // Publicar los datos en el tópio de telemetría para que el servidor los reciba
-  publicarTelemetria("idLeida",idStr);
+  DynamicJsonDocument resp(256);
+    resp["idLeida"] = idStr; //temperature;  //Agrega el dato al Json, ej: "temperature": 21.5
+    char buffer[256];
+    serializeJson(resp, buffer);
+    client.publish("v1/devices/me/telemetry", buffer);  // Publica el mensaje de telemetría
+
+    Serial.print("Publicar mensaje [telemetry]: ");
+    Serial.println(buffer);
 }
 
 
@@ -247,6 +280,9 @@ void setup() {
   // Sensores y actuadores
   pinMode(caldera, OUTPUT);       // Inicializar el LED como salida
   pinMode(sensorAgua, INPUT);            // Inicializar el DHT como entrada
+  servo_puerta.attach(SERVO_PUERTA);  // attaches the servo on ESP32 pin
+  servo_puerta.write(0);
+  delay(15);
   sensors.begin();
 
   //init rfid D8,D5,D6,D7
