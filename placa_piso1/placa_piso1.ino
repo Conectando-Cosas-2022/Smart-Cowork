@@ -280,6 +280,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(pin_ventilador, LOW);
       Serial.println("Ventilador apagado");
       publicarAtributo("estadoVentilador", digitalRead(pin_ventilador));
+
+    }else if (metodo == "on_SmartFilm") {
+      digitalWrite(pin_SmartFilm1, HIGH);
+      digitalWrite(pin_SmartFilm2, HIGH);
+      Serial.println("Vidrios transparentes");
+      publicarAtributo("estadoVidrios", digitalRead(pin_SmartFilm1));
+
+    }else if (metodo == "off_SmartFilm") {
+      digitalWrite(pin_SmartFilm1, LOW);
+      digitalWrite(pin_SmartFilm2, LOW);
+      Serial.println("Vidrio opaco");
+      publicarAtributo("estadoVidrios", digitalRead(pin_SmartFilm1));
     }
   }
 }
