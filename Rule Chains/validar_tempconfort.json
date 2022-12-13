@@ -1,0 +1,156 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": ""
+    },
+    "name": "Validar tempConfort",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "externalId": null
+  },
+  "metadata": {
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 301,
+          "layoutY": 96
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "tempConfort",
+        "debugMode": true,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "tempConfort"
+          ],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 297,
+          "layoutY": 247
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsSwitchNode",
+        "name": "qué Modo?",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var modo = 0;\nif (msg.tempAmbiente > metadata[\"ss_tempConfort\"]+1){\n    modo = [\"enfriar\"];\n}else if (msg.tempAmbiente < metadata[\"ss_tempConfort\"]-1){\n    modo = [\"calentar\"];\n}else{\n    modo = [\"apagar\"];\n}\n\nreturn modo;",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 658,
+          "layoutY": 217
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "modo Calentar",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "\nvar msg = {\"modo\": \"calentar\"};\n\nvar msgType = 'POST_ATTRIBUTES_REQUEST';\n\nvar metadata = {\n    \"deviceName\": \"ESP32_Piso1\",\n    \"deviceType\": \"default\",\n    \"ts\": \"1666742028950\"\n};\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 980,
+          "layoutY": 298
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "guardarModoNuevo",
+        "debugMode": true,
+        "configuration": {
+          "scope": "SHARED_SCOPE",
+          "notifyDevice": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 649,
+          "layoutY": 297
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "modo Enfriar",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "\nvar msg = {\"modo\": \"enfriar\"};\n\nvar msgType = 'POST_ATTRIBUTES_REQUEST';\nvar metadata = {\n    \"deviceName\": \"ESP32_Piso1\",\n    \"deviceType\": \"default\",\n    \"ts\": \"1666742028950\"\n};\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};\n"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 648,
+          "layoutY": 377
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "modo Apagar",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "\nvar msg = {\"modo\": \"apagar\"};\n\nvar msgType = 'POST_ATTRIBUTES_REQUEST';\n\nvar metadata = {\n    \"deviceName\": \"ESP32_Piso1\",\n    \"deviceType\": \"default\",\n    \"ts\": \"1666742028950\"\n};\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        },
+        "externalId": null
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "calentar"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 4,
+        "type": "enfriar"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 5,
+        "type": "Failure"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 5,
+        "type": "apagar"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 3,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

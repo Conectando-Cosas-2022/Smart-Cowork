@@ -1,0 +1,262 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": ""
+    },
+    "name": "Validar RFID",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "externalId": null
+  },
+  "metadata": {
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 316,
+          "layoutY": 113
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetRelatedAttributeNode",
+        "name": "Add userList",
+        "debugMode": true,
+        "configuration": {
+          "relationsQuery": {
+            "fetchLastLevelOnly": false,
+            "direction": "TO",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Manages",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          },
+          "telemetry": false,
+          "attrMapping": {
+            "userList": "userList"
+          }
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1027,
+          "layoutY": 55
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "guardar atributos",
+        "debugMode": false,
+        "configuration": {
+          "scope": "SHARED_SCOPE",
+          "notifyDevice": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 511,
+          "layoutY": 194
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "add usersIN",
+        "debugMode": true,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "fetchToData": false,
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [
+            "usersIN"
+          ],
+          "serverAttributeNames": [],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 723,
+          "layoutY": 294
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "agregar/elimina user leido",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var usrValido = false;\nvar arrUsrIN = [];\n\n\n// es un usuario valido?\nvar userList = JSON.parse(metadata.userList);\nvar filterUserRead = userList.users.filter(user => user.id == msg.idLeida);\n//filterUserRead = JSON.parse(filterUserRead);\n\nif(filterUserRead.length != 0){\n    usrValido = true;\n    \n    //ese usuario ya esta en el cowork?\n    var usersIN = JSON.parse(metadata.shared_usersIN);\n    arrUsrIN = usersIN.users;\n    var filterUserIN = arrUsrIN.filter(user => user.id == msg.idLeida);\n    \n    if(filterUserIN.length != 0 ){\n        //el usuario esta saliendo --> hay que sacarlo de la lista\n        \n        var aux = [];\n        for (var i = 0; i < arrUsrIN.length; i++) {\n            if(arrUsrIN[i]!=filterUserIN[0]){\n                aux.push(arrUsrIN[i]); \n            }else{\n                \n            }\n        }\n        \n        arrUsrIN = aux;\n        \n    }else{\n        //el usuario esta entrando --> hay que guardarlo en la lista\n       arrUsrIN = arrUsrIN.concat(filterUserRead);\n    }\n}\n\n/*var msg = {\"usersIN\": {\"users\": arrUsrIN},\n            \"usrValido\" : usrValido,\n            \"idLeida\":msg.idLeida,\n            \"usrLeido\":filterUserRead };*/\n\nvar msg = {\"usersIN\": {\"users\": arrUsrIN},\n            \"cantPP\": arrUsrIN.length-1,\n            \"usrValido\" : usrValido\n             };\n\nvar msgType = 'POST_ATTRIBUTES_REQUEST';\n\nvar metadata = {\n    \"deviceName\": \"ESP32_Piso1\",\n    \"deviceType\": \"default\",\n    \"ts\": \"1666742028950\"\n};\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};",
+          "tbelScript": "\nvar userList = JSON.parse(metadata.userList);\n\nvar filterUserRead = userList.users.filter(user => user.id == msg.idLeida);\n\nvar usersIN = JSON.parse(metadata.usersIN);\n\nvar filterUserIN = usersIN\n\n\nfilterUsers.length != 0;\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1038,
+          "layoutY": 141
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "User Valido",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "TBEL",
+          "jsScript": "return msg.temperature > 20;",
+          "tbelScript": "return msg.usrValido;"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1332,
+          "layoutY": 143
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "abrir puerta",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "40344260-66d4-11ed-81ab-ffa1a15f3161"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1009,
+          "layoutY": 441
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Hay Gente?",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "return msg.cantPP > 0;",
+          "tbelScript": "return msg.temperature > 20;"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1251,
+          "layoutY": 442
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "Modo No Hay Gente",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "c952f370-66d4-11ed-81ab-ffa1a15f3161"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 746,
+          "layoutY": 515
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Hay una persona?",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "return msg.cantPP == 1;",
+          "tbelScript": "return msg.temperature > 20;"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "Baja temp confort a 18",
+          "layoutX": 1014,
+          "layoutY": 542
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "setear Temp Confort normal",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "\nvar msg = {\"tempConfort\": 21 };\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};",
+          "tbelScript": "var msg = {\"modo\": \"ahorro\" };\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1276,
+          "layoutY": 552
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "guardarTempConfortNuevo",
+        "debugMode": true,
+        "configuration": {
+          "scope": "SERVER_SCOPE",
+          "notifyDevice": false
+        },
+        "externalId": null
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 4,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 5,
+        "type": "True"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 7,
+        "type": "False"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 9,
+        "type": "True"
+      },
+      {
+        "fromIndex": 9,
+        "toIndex": 10,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

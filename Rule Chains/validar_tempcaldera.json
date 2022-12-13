@@ -1,0 +1,223 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": ""
+    },
+    "name": "Validar tempCaldera",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "externalId": null
+  },
+  "metadata": {
+    "firstNodeIndex": 1,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 653,
+          "layoutY": 30
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "Save telemetry",
+        "debugMode": true,
+        "configuration": {
+          "defaultTTL": 0,
+          "skipLatestPersistence": false,
+          "useServerTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 287,
+          "layoutY": 184
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "Fetch attribute threshold to metadata",
+        "debugMode": false,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "maxTemp"
+          ],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 858,
+          "layoutY": 353
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Paso tempMax?",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "\nreturn msg.temperature > metadata[\"ss_maxTemp\"];"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 995,
+          "layoutY": 98
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "CalderaPrendida?",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "62337f50-50dd-11ed-b827-c9be76c6f5d7"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1009,
+          "layoutY": 520
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "Caldera prendida",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "62337f50-50dd-11ed-b827-c9be76c6f5d7"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1191,
+          "layoutY": 231
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "Apagar Caldera",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "956d1f90-50db-11ed-b827-c9be76c6f5d7"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1200,
+          "layoutY": 335
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "Prender Caldera",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "ea30f3d0-50db-11ed-b827-c9be76c6f5d7"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 383,
+          "layoutY": 341
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetDeviceAttrNode",
+        "name": "Add modo",
+        "debugMode": true,
+        "configuration": {
+          "deviceRelationsQuery": {
+            "fetchLastLevelOnly": false,
+            "direction": "TO",
+            "maxLevel": 1,
+            "relationType": "Contains",
+            "deviceTypes": [
+              "default"
+            ]
+          },
+          "tellFailureIfAbsent": true,
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [
+            "modo"
+          ],
+          "serverAttributeNames": [],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 622,
+          "layoutY": 282
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "modo Calentar?",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "return metadata.shared_modo == \"calentar\";"
+        },
+        "externalId": null
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 1,
+        "toIndex": 7,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 3,
+        "type": "True"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 4,
+        "type": "False"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 5,
+        "type": "si"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 6,
+        "type": "no"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 0,
+        "type": "False"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 0,
+        "type": "True"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 2,
+        "type": "True"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 3,
+        "type": "False"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}
