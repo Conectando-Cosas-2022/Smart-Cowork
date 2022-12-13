@@ -1,0 +1,512 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": ""
+    },
+    "name": "Llamados a actuadores de climatización",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "externalId": null
+  },
+  "metadata": {
+    "firstNodeIndex": null,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 30,
+          "layoutY": 228
+        },
+        "type": "org.thingsboard.rule.engine.debug.TbMsgGeneratorNode",
+        "name": "Generador de pulsos",
+        "debugMode": false,
+        "configuration": {
+          "msgCount": 0,
+          "periodInSeconds": 5,
+          "scriptLang": "JS",
+          "jsScript": "var msg = { };\nvar metadata = {};\nvar msgType = \"POST_TELEMETRY_REQUEST\";\n\nreturn { msg: msg, metadata: metadata, msgType: msgType };",
+          "tbelScript": "var msg = { temp: 42, humidity: 77 };\nvar metadata = { data: 40 };\nvar msgType = \"POST_TELEMETRY_REQUEST\";\n\nreturn { msg: msg, metadata: metadata, msgType: msgType };",
+          "originatorId": "e094c1e0-4f40-11ed-b827-c9be76c6f5d7",
+          "originatorType": "DEVICE"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 106,
+          "layoutY": 356
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "Add modo",
+        "debugMode": true,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "fetchToData": false,
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [
+            "modo"
+          ],
+          "serverAttributeNames": [],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 313,
+          "layoutY": 497
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsSwitchNode",
+        "name": "qué Modo?",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "\n// return [metadata.shared_modo];\nreturn \"apagar\"",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 942,
+          "layoutY": 608
+        },
+        "type": "org.thingsboard.rule.engine.rpc.TbSendRPCRequestNode",
+        "name": "Prender Bomba",
+        "debugMode": false,
+        "configuration": {
+          "timeoutInSeconds": 60
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 680,
+          "layoutY": 539
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Crear mensaje con funcion a llamar prender bomba",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var msg = {\n  \"method\": \"prenderBomba\",\n  \"params\": \"\"\n}\n\nreturn {msg: msg};\n\n//, metadata: metadata, msgType: msgType",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 860,
+          "layoutY": 97
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "cambiar entity",
+        "debugMode": false,
+        "configuration": {
+          "originatorSource": "ENTITY",
+          "entityType": "ASSET",
+          "entityNamePattern": "Cowork",
+          "relationsQuery": {
+            "direction": "FROM",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": []
+              }
+            ],
+            "fetchLastLevelOnly": false
+          }
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 593,
+          "layoutY": 84
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "add tempConfort",
+        "debugMode": true,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "fetchToData": false,
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "tempConfort"
+          ],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 618,
+          "layoutY": 186
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsSwitchNode",
+        "name": "check temp",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "\nif(metadata.ss_tempConfort >parseFloat(JSON.parse(metadata.outsideTemp))){\n    \n    return 'estaFrio';\n    \n}else{\n    return 'haceCalor';\n}\n\n\n",
+          "tbelScript": "if(parseFloat(metadata.ss_tempConfort)> parseFloat(metadata.outsideTemp)){\n    \n    return 'estaFrio';\n}else{\n    return 'haceCalor'\n}\n\n\n"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1142,
+          "layoutY": 111
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetTelemetryNode",
+        "name": "Add main & type",
+        "debugMode": true,
+        "configuration": {
+          "latestTsKeyNames": [
+            "type",
+            "outsideTemp"
+          ],
+          "aggregation": "NONE",
+          "fetchMode": "LAST",
+          "orderBy": "ASC",
+          "limit": 1000,
+          "useMetadataIntervalPatterns": false,
+          "startInterval": 2,
+          "startIntervalTimeUnit": "MINUTES",
+          "endInterval": 1,
+          "endIntervalTimeUnit": "MINUTES",
+          "startIntervalPattern": "",
+          "endIntervalPattern": ""
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1278,
+          "layoutY": 383
+        },
+        "type": "org.thingsboard.rule.engine.rpc.TbSendRPCRequestNode",
+        "name": "Ejecutar actuador enfriar",
+        "debugMode": false,
+        "configuration": {
+          "timeoutInSeconds": 60
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1232,
+          "layoutY": 256
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "abrirVentanas",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var msg = {\n  \"method\": \"abrirVentanas\",\n  \"params\": \"\"\n}\n\nreturn {msg: msg};\n\n//, metadata: metadata, msgType: msgType",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 670,
+          "layoutY": 388
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "prenderVentilador",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var msg = {\n  \"method\": \"prenderVentilador\",\n  \"params\": \"\"\n}\n\nreturn {msg: msg};\n\n//, metadata: metadata, msgType: msgType",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 944,
+          "layoutY": 722
+        },
+        "type": "org.thingsboard.rule.engine.rpc.TbSendRPCRequestNode",
+        "name": "apagar todos",
+        "debugMode": false,
+        "configuration": {
+          "timeoutInSeconds": 60
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 560,
+          "layoutY": 647
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Apagar Bomba",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var msg = {\n  \"method\": \"apagarBomba\",\n  \"params\": \"\"\n}\n\nreturn {msg: msg};\n\n//, metadata: metadata, msgType: msgType",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 511,
+          "layoutY": 712
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Apagar Ventilador",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var msg = {\n  \"method\": \"apagarVentilador\",\n  \"params\": \"\"\n}\n\nreturn {msg: msg};\n\n//, metadata: metadata, msgType: msgType",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 396,
+          "layoutY": 817
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetTelemetryNode",
+        "name": "Add ppm_Aire",
+        "debugMode": true,
+        "configuration": {
+          "latestTsKeyNames": [
+            "ppm_Aire"
+          ],
+          "aggregation": "NONE",
+          "fetchMode": "LAST",
+          "orderBy": "ASC",
+          "limit": 1000,
+          "useMetadataIntervalPatterns": false,
+          "startInterval": 7,
+          "startIntervalTimeUnit": "DAYS",
+          "endInterval": 1,
+          "endIntervalTimeUnit": "MINUTES",
+          "startIntervalPattern": "",
+          "endIntervalPattern": ""
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 642,
+          "layoutY": 822
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Check if ventana abierta para ventilar",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "return msg.ppm_Aire > 600;",
+          "tbelScript": "return msg.ppm_Aire <600;"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 891,
+          "layoutY": 847
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Cerrar ventanas",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var msg = {\n  \"method\": \"cerrarVentanas\",\n  \"params\": \"\"\n}\n\nreturn {msg: msg};\n\n//, metadata: metadata, msgType: msgType",
+          "tbelScript": null
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 967,
+          "layoutY": 200
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "llueve?",
+        "debugMode": true,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "\nif(\"Rain\" === JSON.parse(metadata.type)){\n    \n    return true;\n    \n}else{\n    return false;\n}",
+          "tbelScript": "return msg.temperature > 20;"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1011,
+          "layoutY": 387
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "entity donde voy a hacer llamado RPC",
+        "debugMode": true,
+        "configuration": {
+          "originatorSource": "ENTITY",
+          "entityType": "DEVICE",
+          "entityNamePattern": "ESP32_piso1",
+          "relationsQuery": {
+            "direction": "FROM",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": []
+              }
+            ],
+            "fetchLastLevelOnly": false
+          }
+        },
+        "externalId": null
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 4,
+        "type": "calentar"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 6,
+        "type": "enfriar"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 13,
+        "type": "apagar"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 14,
+        "type": "apagar"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 15,
+        "type": "apagar"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 5,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 11,
+        "type": "haceCalor"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 18,
+        "type": "estaFrio"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 7,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 10,
+        "toIndex": 19,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 11,
+        "toIndex": 19,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 13,
+        "toIndex": 12,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 14,
+        "toIndex": 12,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 15,
+        "toIndex": 16,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 16,
+        "toIndex": 17,
+        "type": "False"
+      },
+      {
+        "fromIndex": 17,
+        "toIndex": 12,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 18,
+        "toIndex": 10,
+        "type": "False"
+      },
+      {
+        "fromIndex": 18,
+        "toIndex": 11,
+        "type": "True"
+      },
+      {
+        "fromIndex": 19,
+        "toIndex": 9,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

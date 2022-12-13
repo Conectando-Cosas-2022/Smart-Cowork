@@ -1,0 +1,100 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": ""
+    },
+    "name": "CalderaPrendida?",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "externalId": null
+  },
+  "metadata": {
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 309,
+          "layoutY": 154
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "Fetch attribute threshold to metadata",
+        "debugMode": false,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "clientAttributeNames": [
+            "estadoCaldera"
+          ],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [],
+          "latestTsKeyNames": [],
+          "getLatestValueWithTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 575,
+          "layoutY": 142
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "yaEstaPrendida",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "\nreturn (\"1\"== metadata[\"cs_estadoCaldera\"]);"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "calderaPrendida",
+          "layoutX": 911,
+          "layoutY": 88
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainOutputNode",
+        "name": "si",
+        "debugMode": false,
+        "configuration": {
+          "version": 0
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "calderaApagada",
+          "layoutX": 916,
+          "layoutY": 200
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainOutputNode",
+        "name": "no",
+        "debugMode": false,
+        "configuration": {
+          "version": 0
+        },
+        "externalId": null
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "True"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 3,
+        "type": "False"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

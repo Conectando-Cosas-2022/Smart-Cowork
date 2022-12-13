@@ -1,0 +1,104 @@
+{
+  "ruleChain": {
+    "additionalInfo": {
+      "description": ""
+    },
+    "name": "origenTelemetryP0",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "externalId": null
+  },
+  "metadata": {
+    "firstNodeIndex": 1,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 622,
+          "layoutY": 93
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "RFID",
+        "debugMode": true,
+        "configuration": {
+          "ruleChainId": "09969240-5be3-11ed-885b-d1d049781439"
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 294,
+          "layoutY": 153
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbCheckMessageNode",
+        "name": "tempAgua Telemetry?",
+        "debugMode": true,
+        "configuration": {
+          "messageNames": [
+            "temperature"
+          ],
+          "metadataNames": [],
+          "checkAllKeys": true
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 441,
+          "layoutY": 23
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "Save Timeseries",
+        "debugMode": false,
+        "configuration": {
+          "defaultTTL": 0,
+          "skipLatestPersistence": false,
+          "useServerTs": false
+        },
+        "externalId": null
+      },
+      {
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 580,
+          "layoutY": 265
+        },
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainInputNode",
+        "name": "Validador de temperatura caldera",
+        "debugMode": false,
+        "configuration": {
+          "ruleChainId": "bd1e5ec0-3eaa-11ed-a339-0708081d40ce"
+        },
+        "externalId": null
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 1,
+        "toIndex": 0,
+        "type": "False"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "False"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "True"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 3,
+        "type": "True"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}
