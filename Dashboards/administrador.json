@@ -1,0 +1,1175 @@
+{
+  "title": "Administrador",
+  "image": null,
+  "mobileHide": false,
+  "mobileOrder": null,
+  "configuration": {
+    "description": "",
+    "widgets": {
+      "9bcedbb6-54e1-36de-ce8c-9526034c2fb2": {
+        "isSystemType": true,
+        "bundleAlias": "entity_admin_widgets",
+        "typeAlias": "asset_admin_table",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7.5,
+        "sizeY": 6.5,
+        "config": {
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804173884,
+                "endTimeMs": 1670890573884
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "NONE",
+              "limit": 200
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "rgb(255, 255, 255)",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "4px",
+          "settings": {
+            "entitiesTitle": "Estado de actuadores en el piso 1",
+            "enableSearch": true,
+            "enableSelectColumnDisplay": true,
+            "enableStickyHeader": true,
+            "enableStickyAction": true,
+            "reserveSpaceForHiddenAction": "true",
+            "displayEntityName": true,
+            "displayEntityLabel": false,
+            "displayEntityType": false,
+            "displayPagination": false,
+            "defaultSortOrder": "entityName",
+            "useRowStyleFunction": false
+          },
+          "title": "New Asset admin table",
+          "dropShadow": true,
+          "enableFullscreen": true,
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400,
+            "padding": "5px 10px 5px 10px"
+          },
+          "useDashboardTimewindow": false,
+          "showLegend": false,
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "bc54f628-ef97-0776-0661-e7b86b02e4b2",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "estadoVentanas",
+                  "type": "attribute",
+                  "label": "estadoVentanas",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.5123599826380472
+                },
+                {
+                  "name": "estadoVentilador",
+                  "type": "attribute",
+                  "label": "estadoVentilador",
+                  "color": "#4caf50",
+                  "settings": {},
+                  "_hash": 0.09157424462519081
+                }
+              ]
+            }
+          ],
+          "showTitleIcon": false,
+          "titleIcon": "more_horiz",
+          "iconColor": "rgba(0, 0, 0, 0.87)",
+          "iconSize": "24px",
+          "titleTooltip": "",
+          "widgetStyle": {},
+          "displayTimewindow": true,
+          "actions": {
+            "headerButton": [
+              {
+                "name": "Add asset",
+                "icon": "add",
+                "type": "customPretty",
+                "customHtml": "<form #addAssetForm=\"ngForm\" [formGroup]=\"addAssetFormGroup\"\n      (ngSubmit)=\"save()\" style=\"width: 480px;\">\n  <mat-toolbar fxLayout=\"row\" color=\"primary\">\n    <h2>Add asset</h2>\n    <span fxFlex></span>\n    <button mat-button mat-icon-button\n            (click)=\"cancel()\"\n            type=\"button\">\n      <mat-icon class=\"material-icons\">close</mat-icon>\n    </button>\n  </mat-toolbar>\n  <mat-progress-bar color=\"warn\" mode=\"indeterminate\" *ngIf=\"isLoading$ | async\">\n  </mat-progress-bar>\n  <div style=\"height: 4px;\" *ngIf=\"!(isLoading$ | async)\"></div>\n  <div mat-dialog-content>\n      <div class=\"mat-padding\" fxLayout=\"column\">\n            <mat-form-field class=\"mat-block\">\n                <mat-label>Asset name</mat-label>\n                <input matInput formControlName=\"assetName\" required>\n                <mat-error *ngIf=\"addAssetFormGroup.get('assetName').hasError('required')\">\n                    Asset name is required.\n                </mat-error>\n            </mat-form-field>\n            <div fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <tb-entity-subtype-autocomplete\n                    fxFlex=\"50\"\n                    formControlName=\"assetType\"\n                    [required]=\"true\"\n                    [entityType]=\"'ASSET'\"\n                ></tb-entity-subtype-autocomplete>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Label</mat-label>\n                    <input matInput formControlName=\"assetLabel\">\n                </mat-form-field>\n            </div>\n            <div formGroupName=\"attributes\" fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Latitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"latitude\">\n                </mat-form-field>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Longitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"longitude\">\n                </mat-form-field>\n            </div>\n      </div>  \n  </div>\n  <div mat-dialog-actions fxLayout=\"row\">\n    <span fxFlex></span>\n    <button mat-button color=\"primary\"\n            type=\"button\"\n            [disabled]=\"(isLoading$ | async)\"\n            (click)=\"cancel()\" cdkFocusInitial>\n      Cancel\n    </button>\n    <button mat-button mat-raised-button color=\"primary\"\n            style=\"margin-right: 20px;\"\n            type=\"submit\"\n            [disabled]=\"(isLoading$ | async) || addAssetForm.invalid || !addAssetForm.dirty\">\n      Create\n    </button>\n  </div>\n</form>\n",
+                "customCss": "",
+                "customFunction": "let $injector = widgetContext.$scope.$injector;\nlet customDialog = $injector.get(widgetContext.servicesMap.get('customDialog'));\nlet assetService = $injector.get(widgetContext.servicesMap.get('assetService'));\nlet attributeService = $injector.get(widgetContext.servicesMap.get('attributeService'));\n\nopenAddAssetDialog();\n\nfunction openAddAssetDialog() {\n    customDialog.customDialog(htmlTemplate, AddAssetDialogController).subscribe();\n}\n\nfunction AddAssetDialogController(instance) {\n    let vm = instance;\n    \n    vm.addAssetFormGroup = vm.fb.group({\n      assetName: ['', [vm.validators.required]],\n      assetType: ['', [vm.validators.required]],\n      assetLabel: [''],\n      attributes: vm.fb.group({\n          latitude: [null],\n          longitude: [null]\n      })      \n    });\n    \n    vm.cancel = function() {\n        vm.dialogRef.close(null);\n    };\n    \n    vm.save = function() {\n        vm.addAssetFormGroup.markAsPristine();\n        let asset = {\n            name: vm.addAssetFormGroup.get('assetName').value,\n            type: vm.addAssetFormGroup.get('assetType').value,\n            label: vm.addAssetFormGroup.get('assetLabel').value\n        };\n        assetService.saveAsset(asset).subscribe(\n            function (asset) {\n                saveAttributes(asset.id).subscribe(\n                    function () {\n                        widgetContext.updateAliases();\n                        vm.dialogRef.close(null);\n                    }\n                );\n            }\n        );\n    };\n    \n    function saveAttributes(entityId) {\n        let attributes = vm.addAssetFormGroup.get('attributes').value;\n        let attributesArray = [];\n        for (let key in attributes) {\n            attributesArray.push({key: key, value: attributes[key]});\n        }\n        if (attributesArray.length > 0) {\n            return attributeService.saveEntityAttributes(entityId, \"SERVER_SCOPE\", attributesArray);\n        } else {\n            return widgetContext.rxjs.of([]);\n        }\n    }\n}",
+                "customResources": [],
+                "id": "70837a9d-c3de-a9a7-03c5-dccd14998758"
+              }
+            ],
+            "actionCellButton": [
+              {
+                "name": "Edit asset",
+                "icon": "edit",
+                "type": "customPretty",
+                "customHtml": "<form #editAssetForm=\"ngForm\" [formGroup]=\"editAssetFormGroup\"\n      (ngSubmit)=\"save()\" style=\"width: 480px;\">\n  <mat-toolbar fxLayout=\"row\" color=\"primary\">\n    <h2>Edit asset</h2>\n    <span fxFlex></span>\n    <button mat-button mat-icon-button\n            (click)=\"cancel()\"\n            type=\"button\">\n      <mat-icon class=\"material-icons\">close</mat-icon>\n    </button>\n  </mat-toolbar>\n  <mat-progress-bar color=\"warn\" mode=\"indeterminate\" *ngIf=\"isLoading$ | async\">\n  </mat-progress-bar>\n  <div style=\"height: 4px;\" *ngIf=\"!(isLoading$ | async)\"></div>\n  <div mat-dialog-content>\n      <div class=\"mat-padding\" fxLayout=\"column\">\n            <mat-form-field class=\"mat-block\">\n                <mat-label>Asset name</mat-label>\n                <input matInput formControlName=\"assetName\" required>\n                <mat-error *ngIf=\"editAssetFormGroup.get('assetName').hasError('required')\">\n                    Asset name is required.\n                </mat-error>\n            </mat-form-field>\n            <div fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <tb-entity-subtype-autocomplete\n                    fxFlex=\"50\"\n                    formControlName=\"assetType\"\n                    [required]=\"true\"\n                    [entityType]=\"'ASSET'\"\n                ></tb-entity-subtype-autocomplete>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Label</mat-label>\n                    <input matInput formControlName=\"assetLabel\">\n                </mat-form-field>\n            </div>\n            <div formGroupName=\"attributes\" fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Latitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"latitude\">\n                </mat-form-field>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Longitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"longitude\">\n                </mat-form-field>\n            </div>\n      </div>  \n  </div>\n  <div mat-dialog-actions fxLayout=\"row\">\n    <span fxFlex></span>\n    <button mat-button color=\"primary\"\n            type=\"button\"\n            [disabled]=\"(isLoading$ | async)\"\n            (click)=\"cancel()\" cdkFocusInitial>\n      Cancel\n    </button>\n    <button mat-button mat-raised-button color=\"primary\"\n            type=\"submit\"\n            style=\"margin-right: 20px;\"\n            [disabled]=\"(isLoading$ | async) || editAssetForm.invalid || !editAssetForm.dirty\">\n      Update\n    </button>\n  </div>\n</form>\n",
+                "customCss": "",
+                "customFunction": "let $injector = widgetContext.$scope.$injector;\nlet customDialog = $injector.get(widgetContext.servicesMap.get('customDialog'));\nlet assetService = $injector.get(widgetContext.servicesMap.get('assetService'));\nlet attributeService = $injector.get(widgetContext.servicesMap.get('attributeService'));\n\nopenEditAssetDialog();\n\nfunction openEditAssetDialog() {\n    customDialog.customDialog(htmlTemplate, EditAssetDialogController).subscribe();\n}\n\nfunction EditAssetDialogController(instance) {\n    let vm = instance;\n    \n    vm.asset = null;\n    vm.attributes = {};\n    \n    vm.editAssetFormGroup = vm.fb.group({\n      assetName: ['', [vm.validators.required]],\n      assetType: ['', [vm.validators.required]],\n      assetLabel: [''],\n      attributes: vm.fb.group({\n          latitude: [null],\n          longitude: [null]\n      })      \n    });\n    \n    vm.cancel = function() {\n        vm.dialogRef.close(null);\n    };\n    \n    vm.save = function() {\n        vm.editAssetFormGroup.markAsPristine();\n        vm.asset.name = vm.editAssetFormGroup.get('assetName').value,\n        vm.asset.type = vm.editAssetFormGroup.get('assetType').value,\n        vm.asset.label = vm.editAssetFormGroup.get('assetLabel').value\n        assetService.saveAsset(vm.asset).subscribe(\n            function () {\n                saveAttributes().subscribe(\n                    function () {\n                        widgetContext.updateAliases();\n                        vm.dialogRef.close(null);\n                    }\n                );\n            }\n        );\n    };\n    \n    getEntityInfo();\n    \n    function getEntityInfo() {\n        assetService.getAsset(entityId.id).subscribe(\n            function (asset) {\n                attributeService.getEntityAttributes(entityId, 'SERVER_SCOPE',\n                                                    ['latitude', 'longitude']).subscribe(\n                   function (attributes) {\n                        for (let i = 0; i < attributes.length; i++) {\n                            vm.attributes[attributes[i].key] = attributes[i].value; \n                        }\n                        vm.asset = asset;\n                        vm.editAssetFormGroup.patchValue(\n                            {\n                                assetName: vm.asset.name,\n                                assetType: vm.asset.type,\n                                assetLabel: vm.asset.label,\n                                attributes: {\n                                    latitude: vm.attributes.latitude,\n                                    longitude: vm.attributes.longitude\n                                }\n                            }, {emitEvent: false}\n                        );\n                   } \n                );\n            }\n        );    \n    }\n    \n    function saveAttributes() {\n        let attributes = vm.editAssetFormGroup.get('attributes').value;\n        let attributesArray = [];\n        for (let key in attributes) {\n            attributesArray.push({key: key, value: attributes[key]});\n        }\n        if (attributesArray.length > 0) {\n            return attributeService.saveEntityAttributes(entityId, 'SERVER_SCOPE', attributesArray);\n        } else {\n            return widgetContext.rxjs.of([]);\n        }\n    }\n}",
+                "customResources": [],
+                "id": "93931e52-5d7c-903e-67aa-b9435df44ff4"
+              },
+              {
+                "name": "Delete asset",
+                "icon": "delete",
+                "type": "custom",
+                "customFunction": "let $injector = widgetContext.$scope.$injector;\nlet dialogs = $injector.get(widgetContext.servicesMap.get('dialogs'));\nlet assetService = $injector.get(widgetContext.servicesMap.get('assetService'));\n\nopenDeleteAssetDialog();\n\nfunction openDeleteAssetDialog() {\n    let title = \"Are you sure you want to delete the asset \" + entityName +  \"?\";\n    let content = \"Be careful, after the confirmation, the asset and all related data will become unrecoverable!\";\n    dialogs.confirm(title, content, 'Cancel', 'Delete').subscribe(\n        function (result) {\n            if (result) {\n                deleteAsset();\n            }\n        }\n    );\n}\n\nfunction deleteAsset() {\n    assetService.deleteAsset(entityId.id).subscribe(\n        function () {\n            widgetContext.updateAliases();\n        }\n    );\n}\n",
+                "id": "ec2708f6-9ff0-186b-e4fc-7635ebfa3074"
+              }
+            ]
+          }
+        },
+        "row": 0,
+        "col": 0,
+        "id": "9bcedbb6-54e1-36de-ce8c-9526034c2fb2"
+      },
+      "6fbe7b12-627c-2ab8-5784-769f772817e7": {
+        "isSystemType": true,
+        "bundleAlias": "entity_admin_widgets",
+        "typeAlias": "asset_admin_table",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7.5,
+        "sizeY": 6.5,
+        "config": {
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804173885,
+                "endTimeMs": 1670890573885
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "NONE",
+              "limit": 200
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "rgb(255, 255, 255)",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "4px",
+          "settings": {
+            "entitiesTitle": "Estado de actuadores en el subsuelo",
+            "enableSearch": true,
+            "enableSelectColumnDisplay": true,
+            "enableStickyHeader": true,
+            "enableStickyAction": true,
+            "reserveSpaceForHiddenAction": "true",
+            "displayEntityName": true,
+            "displayEntityLabel": false,
+            "displayEntityType": false,
+            "displayPagination": false,
+            "defaultSortOrder": "entityName",
+            "useRowStyleFunction": false
+          },
+          "title": "New Asset admin table",
+          "dropShadow": true,
+          "enableFullscreen": true,
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400,
+            "padding": "5px 10px 5px 10px"
+          },
+          "useDashboardTimewindow": false,
+          "showLegend": false,
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "765dff78-a6e9-bca0-1221-25ee46f410ed",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "estadoBomba",
+                  "type": "attribute",
+                  "label": "estadoBomba",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.8631700924051564
+                },
+                {
+                  "name": "estadoCaldera",
+                  "type": "attribute",
+                  "label": "estadoCaldera",
+                  "color": "#4caf50",
+                  "settings": {},
+                  "_hash": 0.9323414725807988
+                },
+                {
+                  "name": "estadoPuerta",
+                  "type": "attribute",
+                  "label": "estadoPuerta",
+                  "color": "#f44336",
+                  "settings": {},
+                  "_hash": 0.03470459334339315
+                }
+              ]
+            }
+          ],
+          "showTitleIcon": false,
+          "titleIcon": "more_horiz",
+          "iconColor": "rgba(0, 0, 0, 0.87)",
+          "iconSize": "24px",
+          "titleTooltip": "",
+          "widgetStyle": {},
+          "displayTimewindow": true,
+          "actions": {
+            "headerButton": [
+              {
+                "name": "Add asset",
+                "icon": "add",
+                "type": "customPretty",
+                "customHtml": "<form #addAssetForm=\"ngForm\" [formGroup]=\"addAssetFormGroup\"\n      (ngSubmit)=\"save()\" style=\"width: 480px;\">\n  <mat-toolbar fxLayout=\"row\" color=\"primary\">\n    <h2>Add asset</h2>\n    <span fxFlex></span>\n    <button mat-button mat-icon-button\n            (click)=\"cancel()\"\n            type=\"button\">\n      <mat-icon class=\"material-icons\">close</mat-icon>\n    </button>\n  </mat-toolbar>\n  <mat-progress-bar color=\"warn\" mode=\"indeterminate\" *ngIf=\"isLoading$ | async\">\n  </mat-progress-bar>\n  <div style=\"height: 4px;\" *ngIf=\"!(isLoading$ | async)\"></div>\n  <div mat-dialog-content>\n      <div class=\"mat-padding\" fxLayout=\"column\">\n            <mat-form-field class=\"mat-block\">\n                <mat-label>Asset name</mat-label>\n                <input matInput formControlName=\"assetName\" required>\n                <mat-error *ngIf=\"addAssetFormGroup.get('assetName').hasError('required')\">\n                    Asset name is required.\n                </mat-error>\n            </mat-form-field>\n            <div fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <tb-entity-subtype-autocomplete\n                    fxFlex=\"50\"\n                    formControlName=\"assetType\"\n                    [required]=\"true\"\n                    [entityType]=\"'ASSET'\"\n                ></tb-entity-subtype-autocomplete>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Label</mat-label>\n                    <input matInput formControlName=\"assetLabel\">\n                </mat-form-field>\n            </div>\n            <div formGroupName=\"attributes\" fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Latitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"latitude\">\n                </mat-form-field>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Longitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"longitude\">\n                </mat-form-field>\n            </div>\n      </div>  \n  </div>\n  <div mat-dialog-actions fxLayout=\"row\">\n    <span fxFlex></span>\n    <button mat-button color=\"primary\"\n            type=\"button\"\n            [disabled]=\"(isLoading$ | async)\"\n            (click)=\"cancel()\" cdkFocusInitial>\n      Cancel\n    </button>\n    <button mat-button mat-raised-button color=\"primary\"\n            style=\"margin-right: 20px;\"\n            type=\"submit\"\n            [disabled]=\"(isLoading$ | async) || addAssetForm.invalid || !addAssetForm.dirty\">\n      Create\n    </button>\n  </div>\n</form>\n",
+                "customCss": "",
+                "customFunction": "let $injector = widgetContext.$scope.$injector;\nlet customDialog = $injector.get(widgetContext.servicesMap.get('customDialog'));\nlet assetService = $injector.get(widgetContext.servicesMap.get('assetService'));\nlet attributeService = $injector.get(widgetContext.servicesMap.get('attributeService'));\n\nopenAddAssetDialog();\n\nfunction openAddAssetDialog() {\n    customDialog.customDialog(htmlTemplate, AddAssetDialogController).subscribe();\n}\n\nfunction AddAssetDialogController(instance) {\n    let vm = instance;\n    \n    vm.addAssetFormGroup = vm.fb.group({\n      assetName: ['', [vm.validators.required]],\n      assetType: ['', [vm.validators.required]],\n      assetLabel: [''],\n      attributes: vm.fb.group({\n          latitude: [null],\n          longitude: [null]\n      })      \n    });\n    \n    vm.cancel = function() {\n        vm.dialogRef.close(null);\n    };\n    \n    vm.save = function() {\n        vm.addAssetFormGroup.markAsPristine();\n        let asset = {\n            name: vm.addAssetFormGroup.get('assetName').value,\n            type: vm.addAssetFormGroup.get('assetType').value,\n            label: vm.addAssetFormGroup.get('assetLabel').value\n        };\n        assetService.saveAsset(asset).subscribe(\n            function (asset) {\n                saveAttributes(asset.id).subscribe(\n                    function () {\n                        widgetContext.updateAliases();\n                        vm.dialogRef.close(null);\n                    }\n                );\n            }\n        );\n    };\n    \n    function saveAttributes(entityId) {\n        let attributes = vm.addAssetFormGroup.get('attributes').value;\n        let attributesArray = [];\n        for (let key in attributes) {\n            attributesArray.push({key: key, value: attributes[key]});\n        }\n        if (attributesArray.length > 0) {\n            return attributeService.saveEntityAttributes(entityId, \"SERVER_SCOPE\", attributesArray);\n        } else {\n            return widgetContext.rxjs.of([]);\n        }\n    }\n}",
+                "customResources": [],
+                "id": "70837a9d-c3de-a9a7-03c5-dccd14998758"
+              }
+            ],
+            "actionCellButton": [
+              {
+                "name": "Edit asset",
+                "icon": "edit",
+                "type": "customPretty",
+                "customHtml": "<form #editAssetForm=\"ngForm\" [formGroup]=\"editAssetFormGroup\"\n      (ngSubmit)=\"save()\" style=\"width: 480px;\">\n  <mat-toolbar fxLayout=\"row\" color=\"primary\">\n    <h2>Edit asset</h2>\n    <span fxFlex></span>\n    <button mat-button mat-icon-button\n            (click)=\"cancel()\"\n            type=\"button\">\n      <mat-icon class=\"material-icons\">close</mat-icon>\n    </button>\n  </mat-toolbar>\n  <mat-progress-bar color=\"warn\" mode=\"indeterminate\" *ngIf=\"isLoading$ | async\">\n  </mat-progress-bar>\n  <div style=\"height: 4px;\" *ngIf=\"!(isLoading$ | async)\"></div>\n  <div mat-dialog-content>\n      <div class=\"mat-padding\" fxLayout=\"column\">\n            <mat-form-field class=\"mat-block\">\n                <mat-label>Asset name</mat-label>\n                <input matInput formControlName=\"assetName\" required>\n                <mat-error *ngIf=\"editAssetFormGroup.get('assetName').hasError('required')\">\n                    Asset name is required.\n                </mat-error>\n            </mat-form-field>\n            <div fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <tb-entity-subtype-autocomplete\n                    fxFlex=\"50\"\n                    formControlName=\"assetType\"\n                    [required]=\"true\"\n                    [entityType]=\"'ASSET'\"\n                ></tb-entity-subtype-autocomplete>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Label</mat-label>\n                    <input matInput formControlName=\"assetLabel\">\n                </mat-form-field>\n            </div>\n            <div formGroupName=\"attributes\" fxLayout=\"row\" fxLayoutGap=\"8px\">\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Latitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"latitude\">\n                </mat-form-field>\n                <mat-form-field fxFlex=\"50\" class=\"mat-block\">\n                    <mat-label>Longitude</mat-label>\n                    <input type=\"number\" step=\"any\" matInput formControlName=\"longitude\">\n                </mat-form-field>\n            </div>\n      </div>  \n  </div>\n  <div mat-dialog-actions fxLayout=\"row\">\n    <span fxFlex></span>\n    <button mat-button color=\"primary\"\n            type=\"button\"\n            [disabled]=\"(isLoading$ | async)\"\n            (click)=\"cancel()\" cdkFocusInitial>\n      Cancel\n    </button>\n    <button mat-button mat-raised-button color=\"primary\"\n            type=\"submit\"\n            style=\"margin-right: 20px;\"\n            [disabled]=\"(isLoading$ | async) || editAssetForm.invalid || !editAssetForm.dirty\">\n      Update\n    </button>\n  </div>\n</form>\n",
+                "customCss": "",
+                "customFunction": "let $injector = widgetContext.$scope.$injector;\nlet customDialog = $injector.get(widgetContext.servicesMap.get('customDialog'));\nlet assetService = $injector.get(widgetContext.servicesMap.get('assetService'));\nlet attributeService = $injector.get(widgetContext.servicesMap.get('attributeService'));\n\nopenEditAssetDialog();\n\nfunction openEditAssetDialog() {\n    customDialog.customDialog(htmlTemplate, EditAssetDialogController).subscribe();\n}\n\nfunction EditAssetDialogController(instance) {\n    let vm = instance;\n    \n    vm.asset = null;\n    vm.attributes = {};\n    \n    vm.editAssetFormGroup = vm.fb.group({\n      assetName: ['', [vm.validators.required]],\n      assetType: ['', [vm.validators.required]],\n      assetLabel: [''],\n      attributes: vm.fb.group({\n          latitude: [null],\n          longitude: [null]\n      })      \n    });\n    \n    vm.cancel = function() {\n        vm.dialogRef.close(null);\n    };\n    \n    vm.save = function() {\n        vm.editAssetFormGroup.markAsPristine();\n        vm.asset.name = vm.editAssetFormGroup.get('assetName').value,\n        vm.asset.type = vm.editAssetFormGroup.get('assetType').value,\n        vm.asset.label = vm.editAssetFormGroup.get('assetLabel').value\n        assetService.saveAsset(vm.asset).subscribe(\n            function () {\n                saveAttributes().subscribe(\n                    function () {\n                        widgetContext.updateAliases();\n                        vm.dialogRef.close(null);\n                    }\n                );\n            }\n        );\n    };\n    \n    getEntityInfo();\n    \n    function getEntityInfo() {\n        assetService.getAsset(entityId.id).subscribe(\n            function (asset) {\n                attributeService.getEntityAttributes(entityId, 'SERVER_SCOPE',\n                                                    ['latitude', 'longitude']).subscribe(\n                   function (attributes) {\n                        for (let i = 0; i < attributes.length; i++) {\n                            vm.attributes[attributes[i].key] = attributes[i].value; \n                        }\n                        vm.asset = asset;\n                        vm.editAssetFormGroup.patchValue(\n                            {\n                                assetName: vm.asset.name,\n                                assetType: vm.asset.type,\n                                assetLabel: vm.asset.label,\n                                attributes: {\n                                    latitude: vm.attributes.latitude,\n                                    longitude: vm.attributes.longitude\n                                }\n                            }, {emitEvent: false}\n                        );\n                   } \n                );\n            }\n        );    \n    }\n    \n    function saveAttributes() {\n        let attributes = vm.editAssetFormGroup.get('attributes').value;\n        let attributesArray = [];\n        for (let key in attributes) {\n            attributesArray.push({key: key, value: attributes[key]});\n        }\n        if (attributesArray.length > 0) {\n            return attributeService.saveEntityAttributes(entityId, 'SERVER_SCOPE', attributesArray);\n        } else {\n            return widgetContext.rxjs.of([]);\n        }\n    }\n}",
+                "customResources": [],
+                "id": "93931e52-5d7c-903e-67aa-b9435df44ff4"
+              },
+              {
+                "name": "Delete asset",
+                "icon": "delete",
+                "type": "custom",
+                "customFunction": "let $injector = widgetContext.$scope.$injector;\nlet dialogs = $injector.get(widgetContext.servicesMap.get('dialogs'));\nlet assetService = $injector.get(widgetContext.servicesMap.get('assetService'));\n\nopenDeleteAssetDialog();\n\nfunction openDeleteAssetDialog() {\n    let title = \"Are you sure you want to delete the asset \" + entityName +  \"?\";\n    let content = \"Be careful, after the confirmation, the asset and all related data will become unrecoverable!\";\n    dialogs.confirm(title, content, 'Cancel', 'Delete').subscribe(\n        function (result) {\n            if (result) {\n                deleteAsset();\n            }\n        }\n    );\n}\n\nfunction deleteAsset() {\n    assetService.deleteAsset(entityId.id).subscribe(\n        function () {\n            widgetContext.updateAliases();\n        }\n    );\n}\n",
+                "id": "ec2708f6-9ff0-186b-e4fc-7635ebfa3074"
+              }
+            ]
+          }
+        },
+        "row": 0,
+        "col": 0,
+        "id": "6fbe7b12-627c-2ab8-5784-769f772817e7"
+      },
+      "77cb1a9e-3f12-7c67-5f74-cc38b97f1667": {
+        "isSystemType": true,
+        "bundleAlias": "analogue_gauges",
+        "typeAlias": "temperature_gauge_canvas_gauges",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7,
+        "sizeY": 3,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "765dff78-a6e9-bca0-1221-25ee46f410ed",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "temperature",
+                  "type": "timeseries",
+                  "label": "temperature",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.9795006763224883
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804173885,
+                "endTimeMs": 1670890573885
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": false,
+          "backgroundColor": "rgb(255, 255, 255)",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "8px",
+          "settings": {
+            "startAngle": 45,
+            "ticksAngle": 270,
+            "needleCircleSize": 10,
+            "defaultColor": "#e64a19",
+            "minValue": 0,
+            "maxValue": 100,
+            "majorTicksCount": 8,
+            "colorMajorTicks": "#444",
+            "minorTicks": 8,
+            "colorMinorTicks": "#666",
+            "numbersFont": {
+              "family": "Arial",
+              "size": 18,
+              "style": "normal",
+              "weight": "normal",
+              "color": "#263238"
+            },
+            "showUnitTitle": true,
+            "unitTitle": "Temperatura de la caldera",
+            "titleFont": {
+              "family": "Roboto",
+              "size": 24,
+              "style": "normal",
+              "weight": "normal",
+              "color": "#78909c"
+            },
+            "unitsFont": {
+              "family": "Roboto",
+              "size": 26,
+              "style": "normal",
+              "weight": "500",
+              "color": "#37474f"
+            },
+            "valueBox": true,
+            "valueInt": 3,
+            "valueFont": {
+              "family": "Roboto",
+              "size": 40,
+              "style": "normal",
+              "weight": "500",
+              "color": "#444",
+              "shadowColor": "rgba(0,0,0,0.3)"
+            },
+            "colorValueBoxRect": "#888",
+            "colorValueBoxRectEnd": "#666",
+            "colorValueBoxBackground": "#babab2",
+            "colorValueBoxShadow": "rgba(0,0,0,1)",
+            "showBorder": false,
+            "colorPlate": "#fff",
+            "colorNeedleShadowUp": "rgba(2,255,255,0.2)",
+            "colorNeedleShadowDown": "rgba(188,143,143,0.45)",
+            "highlightsWidth": 10,
+            "highlights": [
+              {
+                "from": 0,
+                "to": 10,
+                "color": "#90caf9"
+              },
+              {
+                "from": 10,
+                "to": 11,
+                "color": "rgba(144, 202, 249, 0.66)"
+              },
+              {
+                "from": 20,
+                "to": 25,
+                "color": "rgba(144, 202, 249, 0.33)"
+              },
+              {
+                "from": 25,
+                "to": 15,
+                "color": "rgba(244, 67, 54, 0.2)"
+              },
+              {
+                "from": 30,
+                "to": 40,
+                "color": "rgba(244, 67, 54, 0.4)"
+              },
+              {
+                "from": 40,
+                "to": 60,
+                "color": "rgba(244, 67, 54, 0.6)"
+              },
+              {
+                "from": 60,
+                "to": 80,
+                "color": "rgba(244, 67, 54, 0.8)"
+              },
+              {
+                "from": 80,
+                "to": 100,
+                "color": "#f44336"
+              }
+            ],
+            "animation": true,
+            "animationDuration": 1500,
+            "animationRule": "linear",
+            "barStrokeWidth": 2.5,
+            "colorBarStroke": "#b0bec5",
+            "colorBar": "rgba(255, 255, 255, 0.4)",
+            "colorBarEnd": "rgba(221, 221, 221, 0.38)",
+            "colorBarProgress": "#90caf9",
+            "colorBarProgressEnd": "#f44336"
+          },
+          "title": "Temperatura de la caldera",
+          "dropShadow": true,
+          "enableFullscreen": true,
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "widgetStyle": {},
+          "widgetCss": "",
+          "pageSize": 1024,
+          "noDataDisplayMessage": "",
+          "showLegend": false
+        },
+        "row": 0,
+        "col": 0,
+        "id": "77cb1a9e-3f12-7c67-5f74-cc38b97f1667"
+      },
+      "370e88db-f691-6419-53ba-0f9b1b78b424": {
+        "isSystemType": true,
+        "bundleAlias": "digital_gauges",
+        "typeAlias": "digital_bar",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 6,
+        "sizeY": 2.5,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "bc54f628-ef97-0776-0661-e7b86b02e4b2",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "ppm_Aire",
+                  "type": "timeseries",
+                  "label": "ppm_Aire",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.5837036592747837
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804173885,
+                "endTimeMs": 1670890573885
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "#000000",
+          "color": "rgba(255, 254, 254, 0.87)",
+          "padding": "0px",
+          "settings": {
+            "minValue": 0,
+            "maxValue": 1500,
+            "gaugeType": "horizontalBar",
+            "gaugeWidthScale": 0.75,
+            "neonGlowBrightness": 40,
+            "dashThickness": 1.5,
+            "roundedLineCap": false,
+            "gaugeColor": "#171a1c",
+            "useFixedLevelColor": false,
+            "levelColors": [
+              "#008000",
+              "#fbc02d",
+              "#f44336"
+            ],
+            "showTitle": false,
+            "showUnitTitle": true,
+            "unitTitle": "PPM",
+            "showTimestamp": false,
+            "labelFont": {
+              "family": "Roboto",
+              "size": 8,
+              "style": "normal",
+              "weight": "500"
+            },
+            "showValue": true,
+            "valueFont": {
+              "family": "Segment7Standard",
+              "style": "normal",
+              "weight": "500",
+              "size": 18
+            },
+            "showMinMax": true,
+            "minMaxFont": {
+              "family": "Segment7Standard",
+              "size": 12,
+              "style": "normal",
+              "weight": "500",
+              "color": "#ffffff"
+            },
+            "showTicks": false,
+            "animation": true,
+            "animationDuration": 500,
+            "animationRule": "linear"
+          },
+          "title": "Calidad del aire",
+          "dropShadow": true,
+          "enableFullscreen": true,
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "widgetStyle": {},
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "showTitleIcon": false,
+          "titleTooltip": "",
+          "widgetCss": "",
+          "pageSize": 1024,
+          "decimals": 0,
+          "noDataDisplayMessage": ""
+        },
+        "row": 0,
+        "col": 0,
+        "id": "370e88db-f691-6419-53ba-0f9b1b78b424"
+      },
+      "a5e91774-944f-082d-f500-25bb207ec078": {
+        "isSystemType": true,
+        "bundleAlias": "input_widgets",
+        "typeAlias": "update_server_integer_attribute",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7.5,
+        "sizeY": 3,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "bc54f628-ef97-0776-0661-e7b86b02e4b2",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "tempConfort",
+                  "type": "attribute",
+                  "label": "tempConfort",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.6203943609913252
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804254224,
+                "endTimeMs": 1670890654224
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "8px",
+          "settings": {},
+          "title": "Editar temperatura de confort",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "showTitleIcon": false,
+          "titleTooltip": "",
+          "widgetCss": "",
+          "pageSize": 1024,
+          "noDataDisplayMessage": ""
+        },
+        "row": 0,
+        "col": 0,
+        "id": "a5e91774-944f-082d-f500-25bb207ec078"
+      },
+      "b11e540c-7e2e-dd26-c48f-2750308ba17c": {
+        "isSystemType": true,
+        "bundleAlias": "input_widgets",
+        "typeAlias": "update_server_integer_attribute",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7.5,
+        "sizeY": 3,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "765dff78-a6e9-bca0-1221-25ee46f410ed",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "maxTemp",
+                  "type": "attribute",
+                  "label": "maxTemp",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.08030822666972015
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804296416,
+                "endTimeMs": 1670890696416
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "8px",
+          "settings": {},
+          "title": "Editar temperatura máxima del agua en la caldera",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "showTitleIcon": false,
+          "titleTooltip": "",
+          "widgetCss": "",
+          "pageSize": 1024,
+          "noDataDisplayMessage": ""
+        },
+        "row": 0,
+        "col": 0,
+        "id": "b11e540c-7e2e-dd26-c48f-2750308ba17c"
+      },
+      "a754a4a6-e405-3c9f-4406-a13c5a2d7dab": {
+        "isSystemType": true,
+        "bundleAlias": "digital_gauges",
+        "typeAlias": "neon_gauge_justgage",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 5,
+        "sizeY": 3,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "bc54f628-ef97-0776-0661-e7b86b02e4b2",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "tempAmbiente",
+                  "type": "timeseries",
+                  "label": "tempAmbiente",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.8341605360752269
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804467413,
+                "endTimeMs": 1670890867413
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "#000000",
+          "color": "rgba(255, 254, 254, 0.87)",
+          "padding": "0px",
+          "settings": {
+            "minValue": 0,
+            "maxValue": 50,
+            "gaugeType": "arc",
+            "gaugeWidthScale": 0.75,
+            "neonGlowBrightness": 70,
+            "dashThickness": 1,
+            "roundedLineCap": false,
+            "useFixedLevelColor": false,
+            "levelColors": [],
+            "showTitle": false,
+            "showUnitTitle": false,
+            "showTimestamp": false,
+            "showValue": true,
+            "valueFont": {
+              "family": "Segment7Standard",
+              "style": "normal",
+              "weight": "500",
+              "size": 32
+            },
+            "showMinMax": true,
+            "minMaxFont": {
+              "family": "Segment7Standard",
+              "size": 12,
+              "style": "normal",
+              "weight": "500"
+            },
+            "showTicks": false,
+            "animation": true,
+            "animationDuration": 500,
+            "animationRule": "linear"
+          },
+          "title": "Temperatura ambiente",
+          "dropShadow": true,
+          "enableFullscreen": true,
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "widgetStyle": {},
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "widgetCss": "",
+          "pageSize": 1024,
+          "noDataDisplayMessage": "",
+          "showTitleIcon": false,
+          "titleTooltip": ""
+        },
+        "row": 0,
+        "col": 0,
+        "id": "a754a4a6-e405-3c9f-4406-a13c5a2d7dab"
+      },
+      "b08c00e3-27ca-85ba-48d8-5819d6cfe0cc": {
+        "isSystemType": true,
+        "bundleAlias": "input_widgets",
+        "typeAlias": "update_server_integer_attribute",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7.5,
+        "sizeY": 3,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "bb286dc1-3cba-f7aa-07c7-8cb3443448a6",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "openTime",
+                  "type": "attribute",
+                  "label": "openTime",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.7557663253828215
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804610647,
+                "endTimeMs": 1670891010647
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "8px",
+          "settings": {
+            "showLabel": true,
+            "isRequired": true,
+            "showResultMessage": true,
+            "minValue": 1,
+            "maxValue": 24
+          },
+          "title": "Hora de apertura del cowork",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "showTitleIcon": false,
+          "titleTooltip": "",
+          "widgetCss": "",
+          "pageSize": 1024,
+          "noDataDisplayMessage": ""
+        },
+        "row": 0,
+        "col": 0,
+        "id": "b08c00e3-27ca-85ba-48d8-5819d6cfe0cc"
+      },
+      "2dc3bbbf-af24-37bf-e753-ffc1ad83d73e": {
+        "isSystemType": true,
+        "bundleAlias": "input_widgets",
+        "typeAlias": "update_server_integer_attribute",
+        "type": "latest",
+        "title": "New widget",
+        "image": null,
+        "description": null,
+        "sizeX": 7.5,
+        "sizeY": 3,
+        "config": {
+          "datasources": [
+            {
+              "type": "entity",
+              "name": null,
+              "entityAliasId": "bb286dc1-3cba-f7aa-07c7-8cb3443448a6",
+              "filterId": null,
+              "dataKeys": [
+                {
+                  "name": "closeTime",
+                  "type": "attribute",
+                  "label": "closeTime",
+                  "color": "#2196f3",
+                  "settings": {},
+                  "_hash": 0.04775416295437096
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "displayValue": "",
+            "selectedTab": 0,
+            "realtime": {
+              "realtimeType": 1,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "quickInterval": "CURRENT_DAY"
+            },
+            "history": {
+              "historyType": 0,
+              "interval": 1000,
+              "timewindowMs": 60000,
+              "fixedTimewindow": {
+                "startTimeMs": 1670804675474,
+                "endTimeMs": 1670891075474
+              },
+              "quickInterval": "CURRENT_DAY"
+            },
+            "aggregation": {
+              "type": "AVG",
+              "limit": 2500
+            }
+          },
+          "showTitle": true,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "8px",
+          "settings": {},
+          "title": "Hora de cierre del Cowork",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "showTitleIcon": false,
+          "titleTooltip": "",
+          "widgetCss": "",
+          "pageSize": 1024,
+          "noDataDisplayMessage": ""
+        },
+        "row": 0,
+        "col": 0,
+        "id": "2dc3bbbf-af24-37bf-e753-ffc1ad83d73e"
+      }
+    },
+    "states": {
+      "default": {
+        "name": "Administrador",
+        "root": true,
+        "layouts": {
+          "main": {
+            "widgets": {
+              "9bcedbb6-54e1-36de-ce8c-9526034c2fb2": {
+                "sizeX": 12,
+                "sizeY": 4,
+                "row": 0,
+                "col": 0
+              },
+              "6fbe7b12-627c-2ab8-5784-769f772817e7": {
+                "sizeX": 12,
+                "sizeY": 4,
+                "row": 4,
+                "col": 0
+              },
+              "77cb1a9e-3f12-7c67-5f74-cc38b97f1667": {
+                "sizeX": 9,
+                "sizeY": 3,
+                "row": 0,
+                "col": 12
+              },
+              "370e88db-f691-6419-53ba-0f9b1b78b424": {
+                "sizeX": 9,
+                "sizeY": 2,
+                "row": 3,
+                "col": 12
+              },
+              "a5e91774-944f-082d-f500-25bb207ec078": {
+                "sizeX": 11,
+                "sizeY": 3,
+                "row": 8,
+                "col": 0
+              },
+              "b11e540c-7e2e-dd26-c48f-2750308ba17c": {
+                "sizeX": 11,
+                "sizeY": 3,
+                "row": 11,
+                "col": 0
+              },
+              "a754a4a6-e405-3c9f-4406-a13c5a2d7dab": {
+                "sizeX": 9,
+                "sizeY": 3,
+                "row": 5,
+                "col": 12
+              },
+              "b08c00e3-27ca-85ba-48d8-5819d6cfe0cc": {
+                "sizeX": 10,
+                "sizeY": 3,
+                "row": 8,
+                "col": 11
+              },
+              "2dc3bbbf-af24-37bf-e753-ffc1ad83d73e": {
+                "sizeX": 10,
+                "sizeY": 3,
+                "row": 11,
+                "col": 11
+              }
+            },
+            "gridSettings": {
+              "backgroundColor": "#eeeeee",
+              "columns": 24,
+              "margin": 10,
+              "backgroundSizeMode": "100%"
+            }
+          }
+        }
+      }
+    },
+    "entityAliases": {
+      "bc54f628-ef97-0776-0661-e7b86b02e4b2": {
+        "id": "bc54f628-ef97-0776-0661-e7b86b02e4b2",
+        "alias": "Piso 1",
+        "filter": {
+          "type": "singleEntity",
+          "resolveMultiple": false,
+          "singleEntity": {
+            "entityType": "DEVICE",
+            "id": "e094c1e0-4f40-11ed-b827-c9be76c6f5d7"
+          }
+        }
+      },
+      "765dff78-a6e9-bca0-1221-25ee46f410ed": {
+        "id": "765dff78-a6e9-bca0-1221-25ee46f410ed",
+        "alias": "Subsuelo",
+        "filter": {
+          "type": "singleEntity",
+          "resolveMultiple": false,
+          "singleEntity": {
+            "entityType": "DEVICE",
+            "id": "86908ef0-3ad1-11ed-b827-c9be76c6f5d7"
+          }
+        }
+      },
+      "bb286dc1-3cba-f7aa-07c7-8cb3443448a6": {
+        "id": "bb286dc1-3cba-f7aa-07c7-8cb3443448a6",
+        "alias": "cowork",
+        "filter": {
+          "type": "singleEntity",
+          "resolveMultiple": false,
+          "singleEntity": {
+            "entityType": "ASSET",
+            "id": "cd3dfee0-3e88-11ed-b827-c9be76c6f5d7"
+          }
+        }
+      }
+    },
+    "filters": {},
+    "timewindow": {
+      "displayValue": "",
+      "hideInterval": false,
+      "hideLastInterval": false,
+      "hideQuickInterval": false,
+      "hideAggregation": false,
+      "hideAggInterval": false,
+      "hideTimezone": false,
+      "selectedTab": 0,
+      "realtime": {
+        "realtimeType": 0,
+        "interval": 1000,
+        "timewindowMs": 60000,
+        "quickInterval": "CURRENT_DAY"
+      },
+      "history": {
+        "historyType": 0,
+        "interval": 1000,
+        "timewindowMs": 60000,
+        "fixedTimewindow": {
+          "startTimeMs": 1670803696662,
+          "endTimeMs": 1670890096662
+        },
+        "quickInterval": "CURRENT_DAY"
+      },
+      "aggregation": {
+        "type": "AVG",
+        "limit": 2500
+      }
+    },
+    "settings": {
+      "stateControllerId": "entity",
+      "showTitle": false,
+      "showDashboardsSelect": true,
+      "showEntitiesSelect": true,
+      "showDashboardTimewindow": true,
+      "showDashboardExport": true,
+      "toolbarAlwaysOpen": true
+    }
+  },
+  "externalId": null,
+  "name": "Administrador"
+}
